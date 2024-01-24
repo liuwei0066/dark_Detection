@@ -1,0 +1,2440 @@
+2024-01-18 17:43:16,673 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.6.9 | packaged by conda-forge | (default, Mar  6 2020, 19:24:21) [GCC 7.3.0]
+CUDA available: True
+GPU 0: NVIDIA GeForce RTX 3060
+CUDA_HOME: :/usr/local/cuda-11.2:/usr/local/cuda-11.2
+GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+PyTorch: 1.8.0+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.9.0+cu111
+OpenCV: 4.1.2
+MMCV: 1.4.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.1
+MMDetection: 2.15.1+
+------------------------------------------------------------
+
+2024-01-18 17:43:17,112 - mmdet - INFO - Distributed training: False
+2024-01-18 17:43:17,551 - mmdet - INFO - Config:
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e_coco/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth'
+resume_from = None
+workflow = [('train', 1)]
+dataset_type = 'ExdarkDataset'
+data_root = '/mnt/sda1/Exdark/Exdark/'
+img_norm_cfg = dict(mean=[0, 0, 0], std=[255.0, 255.0, 255.0], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile', to_float32=True),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Expand', mean=[0, 0, 0], to_rgb=True, ratio_range=(1, 2)),
+    dict(
+        type='MinIoURandomCrop',
+        min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+        min_crop_size=0.3),
+    dict(type='Resize', img_scale=[(320, 320), (608, 608)], keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[0, 0, 0],
+        std=[255.0, 255.0, 255.0],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(608, 608),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[0, 0, 0],
+                std=[255.0, 255.0, 255.0],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=8,
+    workers_per_gpu=4,
+    train=dict(
+        type='ExdarkDataset',
+        ann_file='/mnt/sda1/Exdark/Exdark/main/train.txt',
+        img_prefix='/mnt/sda1/Exdark/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile', to_float32=True),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='Expand', mean=[0, 0, 0], to_rgb=True,
+                ratio_range=(1, 2)),
+            dict(
+                type='MinIoURandomCrop',
+                min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+                min_crop_size=0.3),
+            dict(
+                type='Resize',
+                img_scale=[(320, 320), (608, 608)],
+                keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[0, 0, 0],
+                std=[255.0, 255.0, 255.0],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='ExdarkDataset',
+        ann_file='/mnt/sda1/Exdark/Exdark/main/val.txt',
+        img_prefix='/mnt/sda1/Exdark/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(608, 608),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[0, 0, 0],
+                        std=[255.0, 255.0, 255.0],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='ExdarkDataset',
+        ann_file='/mnt/sda1/Exdark/Exdark/main/val.txt',
+        img_prefix='/mnt/sda1/Exdark/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(608, 608),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[0, 0, 0],
+                        std=[255.0, 255.0, 255.0],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+model = dict(
+    type='AOD_YOLOV3',
+    pre_encoder=dict(type='EGEUNet'),
+    backbone=dict(
+        type='Darknet',
+        depth=53,
+        out_indices=(3, 4, 5),
+        init_cfg=dict(type='Pretrained', checkpoint='open-mmlab://darknet53')),
+    neck=dict(
+        type='YOLOV3Neck',
+        num_scales=3,
+        in_channels=[1024, 512, 256],
+        out_channels=[512, 256, 128]),
+    bbox_head=dict(
+        type='YOLOV3Head',
+        num_classes=12,
+        in_channels=[512, 256, 128],
+        out_channels=[1024, 512, 256],
+        anchor_generator=dict(
+            type='YOLOAnchorGenerator',
+            base_sizes=[[(116, 90), (156, 198), (373, 326)],
+                        [(30, 61), (62, 45), (59, 119)],
+                        [(10, 13), (16, 30), (33, 23)]],
+            strides=[32, 16, 8]),
+        bbox_coder=dict(type='YOLOBBoxCoder'),
+        featmap_strides=[32, 16, 8],
+        loss_cls=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=1.0,
+            reduction='sum'),
+        loss_conf=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=1.0,
+            reduction='sum'),
+        loss_xy=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=2.0,
+            reduction='sum'),
+        loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
+    train_cfg=dict(
+        assigner=dict(
+            type='GridAssigner',
+            pos_iou_thr=0.5,
+            neg_iou_thr=0.5,
+            min_pos_iou=0)),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        conf_thr=0.005,
+        nms=dict(type='nms', iou_threshold=0.45),
+        max_per_img=100))
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0005)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=2000,
+    warmup_ratio=0.1,
+    step=[18, 23])
+total_epochs = 25
+evaluation = dict(interval=1, metric=['mAP'])
+work_dir = 'yolov3_Unet'
+gpu_ids = range(0, 1)
+
+2024-01-18 17:43:17,551 - mmdet - INFO - Set random seed to 2024, deterministic: True
+2024-01-18 17:43:17,995 - mmdet - INFO - initialize Darknet with init_cfg {'type': 'Pretrained', 'checkpoint': 'open-mmlab://darknet53'}
+Name of parameter - Initialization information
+
+backbone.conv1.conv.weight - torch.Size([32, 3, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv1.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv1.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.conv.conv.weight - torch.Size([64, 32, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.conv.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.conv.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv1.conv.weight - torch.Size([32, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv1.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv1.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv2.conv.weight - torch.Size([64, 32, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv2.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block1.res0.conv2.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.conv.conv.weight - torch.Size([128, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.conv.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.conv.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv1.conv.weight - torch.Size([64, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv1.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv1.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv2.conv.weight - torch.Size([128, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv2.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res0.conv2.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv1.conv.weight - torch.Size([64, 128, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv1.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv1.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv2.conv.weight - torch.Size([128, 64, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv2.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block2.res1.conv2.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.conv.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.conv.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.conv.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res0.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res1.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res2.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res3.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res4.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res5.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res6.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv1.conv.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv1.bn.weight - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv1.bn.bias - torch.Size([128]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv2.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block3.res7.conv2.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.conv.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.conv.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.conv.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res0.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res1.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res2.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res3.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res4.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res5.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res6.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv1.bn.weight - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv1.bn.bias - torch.Size([256]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv2.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block4.res7.conv2.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.conv.conv.weight - torch.Size([1024, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.conv.bn.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.conv.bn.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv1.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv1.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv2.conv.weight - torch.Size([1024, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv2.bn.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res0.conv2.bn.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv1.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv1.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv2.conv.weight - torch.Size([1024, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv2.bn.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res1.conv2.bn.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv1.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv1.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv2.conv.weight - torch.Size([1024, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv2.bn.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res2.conv2.bn.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv1.bn.weight - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv1.bn.bias - torch.Size([512]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv2.conv.weight - torch.Size([1024, 512, 3, 3]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv2.bn.weight - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+backbone.conv_res_block5.res3.conv2.bn.bias - torch.Size([1024]): 
+PretrainedInit: load from open-mmlab://darknet53 
+
+neck.detect1.conv1.conv.weight - torch.Size([512, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv2.conv.weight - torch.Size([1024, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv2.bn.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv2.bn.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv3.conv.weight - torch.Size([512, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv3.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv3.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv4.conv.weight - torch.Size([1024, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv4.bn.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv4.bn.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv5.conv.weight - torch.Size([512, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv5.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect1.conv5.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.conv1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.conv1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv1.conv.weight - torch.Size([256, 768, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv2.conv.weight - torch.Size([512, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv2.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv2.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv3.conv.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv4.conv.weight - torch.Size([512, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv4.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv4.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv5.conv.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv5.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect2.conv5.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.conv2.conv.weight - torch.Size([128, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.conv2.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.conv2.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv1.conv.weight - torch.Size([128, 384, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv1.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv1.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv2.conv.weight - torch.Size([256, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv3.conv.weight - torch.Size([128, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv3.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv3.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv4.conv.weight - torch.Size([256, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv4.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv4.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv5.conv.weight - torch.Size([128, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv5.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+neck.detect3.conv5.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.0.conv.weight - torch.Size([1024, 512, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.0.bn.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.0.bn.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.1.conv.weight - torch.Size([512, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.2.conv.weight - torch.Size([256, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_bridge.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+bbox_head.convs_pred.0.weight - torch.Size([51, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.0.bias - torch.Size([51]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.1.weight - torch.Size([51, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.1.bias - torch.Size([51]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.2.weight - torch.Size([51, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.2.bias - torch.Size([51]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+pre_encoder.encoder1.0.weight - torch.Size([8, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder1.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder2.0.weight - torch.Size([16, 8, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder2.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder3.0.weight - torch.Size([24, 16, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder3.0.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.params_xy - torch.Size([1, 6, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.params_zx - torch.Size([1, 1, 6, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.params_zy - torch.Size([1, 1, 6, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_xy.0.weight - torch.Size([6, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_xy.0.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_xy.2.weight - torch.Size([6, 6, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_xy.2.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zx.0.weight - torch.Size([6, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zx.0.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zx.2.weight - torch.Size([6, 6, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zx.2.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zy.0.weight - torch.Size([6, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zy.0.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zy.2.weight - torch.Size([6, 6, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.conv_zy.2.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.dw.0.weight - torch.Size([6, 6, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.dw.0.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.dw.2.weight - torch.Size([6, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.dw.2.bias - torch.Size([6]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.norm1.weight - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.norm1.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.norm2.weight - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.norm2.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.ldw.0.weight - torch.Size([24, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.ldw.0.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.ldw.2.weight - torch.Size([32, 24, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder4.0.ldw.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.params_xy - torch.Size([1, 8, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.params_zx - torch.Size([1, 1, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.params_zy - torch.Size([1, 1, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_xy.0.weight - torch.Size([8, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_xy.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_xy.2.weight - torch.Size([8, 8, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_xy.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zx.0.weight - torch.Size([8, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zx.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zx.2.weight - torch.Size([8, 8, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zx.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zy.0.weight - torch.Size([8, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zy.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zy.2.weight - torch.Size([8, 8, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.conv_zy.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.dw.0.weight - torch.Size([8, 8, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.dw.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.dw.2.weight - torch.Size([8, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.dw.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.norm1.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.norm1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.norm2.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.norm2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.ldw.0.weight - torch.Size([32, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.ldw.0.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.ldw.2.weight - torch.Size([48, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder5.0.ldw.2.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.params_xy - torch.Size([1, 12, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.params_zx - torch.Size([1, 1, 12, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.params_zy - torch.Size([1, 1, 12, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_xy.0.weight - torch.Size([12, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_xy.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_xy.2.weight - torch.Size([12, 12, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_xy.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zx.0.weight - torch.Size([12, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zx.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zx.2.weight - torch.Size([12, 12, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zx.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zy.0.weight - torch.Size([12, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zy.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zy.2.weight - torch.Size([12, 12, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.conv_zy.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.dw.0.weight - torch.Size([12, 12, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.dw.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.dw.2.weight - torch.Size([12, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.dw.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.norm1.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.norm1.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.norm2.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.norm2.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.ldw.0.weight - torch.Size([48, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.ldw.0.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.ldw.2.weight - torch.Size([64, 48, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.encoder6.0.ldw.2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.params_xy - torch.Size([1, 16, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.params_zx - torch.Size([1, 1, 16, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.params_zy - torch.Size([1, 1, 16, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_xy.0.weight - torch.Size([16, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_xy.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_xy.2.weight - torch.Size([16, 16, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_xy.2.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zx.0.weight - torch.Size([16, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zx.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zx.2.weight - torch.Size([16, 16, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zx.2.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zy.0.weight - torch.Size([16, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zy.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zy.2.weight - torch.Size([16, 16, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.conv_zy.2.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.dw.0.weight - torch.Size([16, 16, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.dw.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.dw.2.weight - torch.Size([16, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.dw.2.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.norm1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.norm1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.norm2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.norm2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.ldw.0.weight - torch.Size([64, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.ldw.0.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.ldw.2.weight - torch.Size([48, 64, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder1.0.ldw.2.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.params_xy - torch.Size([1, 12, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.params_zx - torch.Size([1, 1, 12, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.params_zy - torch.Size([1, 1, 12, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_xy.0.weight - torch.Size([12, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_xy.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_xy.2.weight - torch.Size([12, 12, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_xy.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zx.0.weight - torch.Size([12, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zx.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zx.2.weight - torch.Size([12, 12, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zx.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zy.0.weight - torch.Size([12, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zy.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zy.2.weight - torch.Size([12, 12, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.conv_zy.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.dw.0.weight - torch.Size([12, 12, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.dw.0.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.dw.2.weight - torch.Size([12, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.dw.2.bias - torch.Size([12]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.norm1.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.norm1.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.norm2.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.norm2.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.ldw.0.weight - torch.Size([48, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.ldw.0.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.ldw.2.weight - torch.Size([32, 48, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder2.0.ldw.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.params_xy - torch.Size([1, 8, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.params_zx - torch.Size([1, 1, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.params_zy - torch.Size([1, 1, 8, 8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_xy.0.weight - torch.Size([8, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_xy.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_xy.2.weight - torch.Size([8, 8, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_xy.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zx.0.weight - torch.Size([8, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zx.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zx.2.weight - torch.Size([8, 8, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zx.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zy.0.weight - torch.Size([8, 1, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zy.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zy.2.weight - torch.Size([8, 8, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.conv_zy.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.dw.0.weight - torch.Size([8, 8, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.dw.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.dw.2.weight - torch.Size([8, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.dw.2.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.norm1.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.norm1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.norm2.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.norm2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.ldw.0.weight - torch.Size([32, 1, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.ldw.0.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.ldw.2.weight - torch.Size([24, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder3.0.ldw.2.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder4.0.weight - torch.Size([16, 24, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder4.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder5.0.weight - torch.Size([8, 16, 3, 3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.decoder5.0.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn1.weight - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn1.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn2.weight - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn2.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn3.weight - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn3.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn4.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn4.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn5.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.ebn5.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn1.weight - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn1.bias - torch.Size([48]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn2.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn3.weight - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn3.bias - torch.Size([24]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn4.weight - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn4.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn5.weight - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.dbn5.bias - torch.Size([8]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.final.weight - torch.Size([3, 8, 1, 1]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+
+pre_encoder.final.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of AOD_YOLOV3  
+2024-01-18 17:43:23,553 - mmdet - INFO - load checkpoint from http path: https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e_coco/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth
+2024-01-18 17:43:23,783 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.convs_pred.0.weight: copying a param with shape torch.Size([255, 1024, 1, 1]) from checkpoint, the shape in current model is torch.Size([51, 1024, 1, 1]).
+size mismatch for bbox_head.convs_pred.0.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([51]).
+size mismatch for bbox_head.convs_pred.1.weight: copying a param with shape torch.Size([255, 512, 1, 1]) from checkpoint, the shape in current model is torch.Size([51, 512, 1, 1]).
+size mismatch for bbox_head.convs_pred.1.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([51]).
+size mismatch for bbox_head.convs_pred.2.weight: copying a param with shape torch.Size([255, 256, 1, 1]) from checkpoint, the shape in current model is torch.Size([51, 256, 1, 1]).
+size mismatch for bbox_head.convs_pred.2.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([51]).
+missing keys in source state_dict: pre_encoder.encoder1.0.weight, pre_encoder.encoder1.0.bias, pre_encoder.encoder2.0.weight, pre_encoder.encoder2.0.bias, pre_encoder.encoder3.0.weight, pre_encoder.encoder3.0.bias, pre_encoder.encoder4.0.params_xy, pre_encoder.encoder4.0.params_zx, pre_encoder.encoder4.0.params_zy, pre_encoder.encoder4.0.conv_xy.0.weight, pre_encoder.encoder4.0.conv_xy.0.bias, pre_encoder.encoder4.0.conv_xy.2.weight, pre_encoder.encoder4.0.conv_xy.2.bias, pre_encoder.encoder4.0.conv_zx.0.weight, pre_encoder.encoder4.0.conv_zx.0.bias, pre_encoder.encoder4.0.conv_zx.2.weight, pre_encoder.encoder4.0.conv_zx.2.bias, pre_encoder.encoder4.0.conv_zy.0.weight, pre_encoder.encoder4.0.conv_zy.0.bias, pre_encoder.encoder4.0.conv_zy.2.weight, pre_encoder.encoder4.0.conv_zy.2.bias, pre_encoder.encoder4.0.dw.0.weight, pre_encoder.encoder4.0.dw.0.bias, pre_encoder.encoder4.0.dw.2.weight, pre_encoder.encoder4.0.dw.2.bias, pre_encoder.encoder4.0.norm1.weight, pre_encoder.encoder4.0.norm1.bias, pre_encoder.encoder4.0.norm2.weight, pre_encoder.encoder4.0.norm2.bias, pre_encoder.encoder4.0.ldw.0.weight, pre_encoder.encoder4.0.ldw.0.bias, pre_encoder.encoder4.0.ldw.2.weight, pre_encoder.encoder4.0.ldw.2.bias, pre_encoder.encoder5.0.params_xy, pre_encoder.encoder5.0.params_zx, pre_encoder.encoder5.0.params_zy, pre_encoder.encoder5.0.conv_xy.0.weight, pre_encoder.encoder5.0.conv_xy.0.bias, pre_encoder.encoder5.0.conv_xy.2.weight, pre_encoder.encoder5.0.conv_xy.2.bias, pre_encoder.encoder5.0.conv_zx.0.weight, pre_encoder.encoder5.0.conv_zx.0.bias, pre_encoder.encoder5.0.conv_zx.2.weight, pre_encoder.encoder5.0.conv_zx.2.bias, pre_encoder.encoder5.0.conv_zy.0.weight, pre_encoder.encoder5.0.conv_zy.0.bias, pre_encoder.encoder5.0.conv_zy.2.weight, pre_encoder.encoder5.0.conv_zy.2.bias, pre_encoder.encoder5.0.dw.0.weight, pre_encoder.encoder5.0.dw.0.bias, pre_encoder.encoder5.0.dw.2.weight, pre_encoder.encoder5.0.dw.2.bias, pre_encoder.encoder5.0.norm1.weight, pre_encoder.encoder5.0.norm1.bias, pre_encoder.encoder5.0.norm2.weight, pre_encoder.encoder5.0.norm2.bias, pre_encoder.encoder5.0.ldw.0.weight, pre_encoder.encoder5.0.ldw.0.bias, pre_encoder.encoder5.0.ldw.2.weight, pre_encoder.encoder5.0.ldw.2.bias, pre_encoder.encoder6.0.params_xy, pre_encoder.encoder6.0.params_zx, pre_encoder.encoder6.0.params_zy, pre_encoder.encoder6.0.conv_xy.0.weight, pre_encoder.encoder6.0.conv_xy.0.bias, pre_encoder.encoder6.0.conv_xy.2.weight, pre_encoder.encoder6.0.conv_xy.2.bias, pre_encoder.encoder6.0.conv_zx.0.weight, pre_encoder.encoder6.0.conv_zx.0.bias, pre_encoder.encoder6.0.conv_zx.2.weight, pre_encoder.encoder6.0.conv_zx.2.bias, pre_encoder.encoder6.0.conv_zy.0.weight, pre_encoder.encoder6.0.conv_zy.0.bias, pre_encoder.encoder6.0.conv_zy.2.weight, pre_encoder.encoder6.0.conv_zy.2.bias, pre_encoder.encoder6.0.dw.0.weight, pre_encoder.encoder6.0.dw.0.bias, pre_encoder.encoder6.0.dw.2.weight, pre_encoder.encoder6.0.dw.2.bias, pre_encoder.encoder6.0.norm1.weight, pre_encoder.encoder6.0.norm1.bias, pre_encoder.encoder6.0.norm2.weight, pre_encoder.encoder6.0.norm2.bias, pre_encoder.encoder6.0.ldw.0.weight, pre_encoder.encoder6.0.ldw.0.bias, pre_encoder.encoder6.0.ldw.2.weight, pre_encoder.encoder6.0.ldw.2.bias, pre_encoder.decoder1.0.params_xy, pre_encoder.decoder1.0.params_zx, pre_encoder.decoder1.0.params_zy, pre_encoder.decoder1.0.conv_xy.0.weight, pre_encoder.decoder1.0.conv_xy.0.bias, pre_encoder.decoder1.0.conv_xy.2.weight, pre_encoder.decoder1.0.conv_xy.2.bias, pre_encoder.decoder1.0.conv_zx.0.weight, pre_encoder.decoder1.0.conv_zx.0.bias, pre_encoder.decoder1.0.conv_zx.2.weight, pre_encoder.decoder1.0.conv_zx.2.bias, pre_encoder.decoder1.0.conv_zy.0.weight, pre_encoder.decoder1.0.conv_zy.0.bias, pre_encoder.decoder1.0.conv_zy.2.weight, pre_encoder.decoder1.0.conv_zy.2.bias, pre_encoder.decoder1.0.dw.0.weight, pre_encoder.decoder1.0.dw.0.bias, pre_encoder.decoder1.0.dw.2.weight, pre_encoder.decoder1.0.dw.2.bias, pre_encoder.decoder1.0.norm1.weight, pre_encoder.decoder1.0.norm1.bias, pre_encoder.decoder1.0.norm2.weight, pre_encoder.decoder1.0.norm2.bias, pre_encoder.decoder1.0.ldw.0.weight, pre_encoder.decoder1.0.ldw.0.bias, pre_encoder.decoder1.0.ldw.2.weight, pre_encoder.decoder1.0.ldw.2.bias, pre_encoder.decoder2.0.params_xy, pre_encoder.decoder2.0.params_zx, pre_encoder.decoder2.0.params_zy, pre_encoder.decoder2.0.conv_xy.0.weight, pre_encoder.decoder2.0.conv_xy.0.bias, pre_encoder.decoder2.0.conv_xy.2.weight, pre_encoder.decoder2.0.conv_xy.2.bias, pre_encoder.decoder2.0.conv_zx.0.weight, pre_encoder.decoder2.0.conv_zx.0.bias, pre_encoder.decoder2.0.conv_zx.2.weight, pre_encoder.decoder2.0.conv_zx.2.bias, pre_encoder.decoder2.0.conv_zy.0.weight, pre_encoder.decoder2.0.conv_zy.0.bias, pre_encoder.decoder2.0.conv_zy.2.weight, pre_encoder.decoder2.0.conv_zy.2.bias, pre_encoder.decoder2.0.dw.0.weight, pre_encoder.decoder2.0.dw.0.bias, pre_encoder.decoder2.0.dw.2.weight, pre_encoder.decoder2.0.dw.2.bias, pre_encoder.decoder2.0.norm1.weight, pre_encoder.decoder2.0.norm1.bias, pre_encoder.decoder2.0.norm2.weight, pre_encoder.decoder2.0.norm2.bias, pre_encoder.decoder2.0.ldw.0.weight, pre_encoder.decoder2.0.ldw.0.bias, pre_encoder.decoder2.0.ldw.2.weight, pre_encoder.decoder2.0.ldw.2.bias, pre_encoder.decoder3.0.params_xy, pre_encoder.decoder3.0.params_zx, pre_encoder.decoder3.0.params_zy, pre_encoder.decoder3.0.conv_xy.0.weight, pre_encoder.decoder3.0.conv_xy.0.bias, pre_encoder.decoder3.0.conv_xy.2.weight, pre_encoder.decoder3.0.conv_xy.2.bias, pre_encoder.decoder3.0.conv_zx.0.weight, pre_encoder.decoder3.0.conv_zx.0.bias, pre_encoder.decoder3.0.conv_zx.2.weight, pre_encoder.decoder3.0.conv_zx.2.bias, pre_encoder.decoder3.0.conv_zy.0.weight, pre_encoder.decoder3.0.conv_zy.0.bias, pre_encoder.decoder3.0.conv_zy.2.weight, pre_encoder.decoder3.0.conv_zy.2.bias, pre_encoder.decoder3.0.dw.0.weight, pre_encoder.decoder3.0.dw.0.bias, pre_encoder.decoder3.0.dw.2.weight, pre_encoder.decoder3.0.dw.2.bias, pre_encoder.decoder3.0.norm1.weight, pre_encoder.decoder3.0.norm1.bias, pre_encoder.decoder3.0.norm2.weight, pre_encoder.decoder3.0.norm2.bias, pre_encoder.decoder3.0.ldw.0.weight, pre_encoder.decoder3.0.ldw.0.bias, pre_encoder.decoder3.0.ldw.2.weight, pre_encoder.decoder3.0.ldw.2.bias, pre_encoder.decoder4.0.weight, pre_encoder.decoder4.0.bias, pre_encoder.decoder5.0.weight, pre_encoder.decoder5.0.bias, pre_encoder.ebn1.weight, pre_encoder.ebn1.bias, pre_encoder.ebn2.weight, pre_encoder.ebn2.bias, pre_encoder.ebn3.weight, pre_encoder.ebn3.bias, pre_encoder.ebn4.weight, pre_encoder.ebn4.bias, pre_encoder.ebn5.weight, pre_encoder.ebn5.bias, pre_encoder.dbn1.weight, pre_encoder.dbn1.bias, pre_encoder.dbn2.weight, pre_encoder.dbn2.bias, pre_encoder.dbn3.weight, pre_encoder.dbn3.bias, pre_encoder.dbn4.weight, pre_encoder.dbn4.bias, pre_encoder.dbn5.weight, pre_encoder.dbn5.bias, pre_encoder.final.weight, pre_encoder.final.bias
+
+2024-01-18 17:43:23,790 - mmdet - INFO - Start running, host: indemind@indemindDL, work_dir: /mnt/sda1/dark_detect/Illumination-Adaptive-Transformer-main/IAT_high/IAT_mmdetection/yolov3_Unet
+2024-01-18 17:43:23,790 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) EvalHook                           
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2024-01-18 17:43:23,791 - mmdet - INFO - workflow: [('train', 1)], max: 25 epochs
+2024-01-18 17:43:23,791 - mmdet - INFO - Checkpoints will be saved to /mnt/sda1/dark_detect/Illumination-Adaptive-Transformer-main/IAT_high/IAT_mmdetection/yolov3_Unet by HardDiskBackend.
+2024-01-18 17:44:04,955 - mmdet - INFO - Epoch [1][50/738]	lr: 1.220e-04, eta: 4:12:23, time: 0.823, data_time: 0.055, memory: 6939, loss_cls: 122.9956, loss_conf: 399.5584, loss_xy: 76.6411, loss_wh: 12.6611, loss: 611.8563, grad_norm: 786.6424
+2024-01-18 17:44:43,673 - mmdet - INFO - Epoch [1][100/738]	lr: 1.445e-04, eta: 4:04:16, time: 0.774, data_time: 0.004, memory: 6939, loss_cls: 97.2034, loss_conf: 180.3379, loss_xy: 69.2461, loss_wh: 6.0193, loss: 352.8066, grad_norm: 586.5642
+2024-01-18 17:45:19,133 - mmdet - INFO - Epoch [1][150/738]	lr: 1.671e-04, eta: 3:54:30, time: 0.709, data_time: 0.005, memory: 6939, loss_cls: 85.0955, loss_conf: 123.3733, loss_xy: 70.4913, loss_wh: 5.3162, loss: 284.2763, grad_norm: 775.6780
+2024-01-18 17:45:57,163 - mmdet - INFO - Epoch [1][200/738]	lr: 1.895e-04, eta: 3:53:14, time: 0.761, data_time: 0.004, memory: 6939, loss_cls: 68.2374, loss_conf: 102.3505, loss_xy: 65.1511, loss_wh: 4.9819, loss: 240.7209, grad_norm: 878.4531
+2024-01-18 17:46:34,882 - mmdet - INFO - Epoch [1][250/738]	lr: 2.121e-04, eta: 3:51:50, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 74.2174, loss_conf: 111.1246, loss_xy: 78.2198, loss_wh: 5.9057, loss: 269.4675, grad_norm: 1009.5995
+2024-01-18 17:47:12,745 - mmdet - INFO - Epoch [1][300/738]	lr: 2.345e-04, eta: 3:50:51, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 61.6208, loss_conf: 89.4919, loss_xy: 68.1197, loss_wh: 4.3811, loss: 223.6136, grad_norm: 947.6527
+2024-01-18 17:47:50,641 - mmdet - INFO - Epoch [1][350/738]	lr: 2.570e-04, eta: 3:49:59, time: 0.758, data_time: 0.005, memory: 6939, loss_cls: 70.6007, loss_conf: 114.9508, loss_xy: 84.3270, loss_wh: 6.4568, loss: 276.3354, grad_norm: 1197.0725
+2024-01-18 17:48:28,396 - mmdet - INFO - Epoch [1][400/738]	lr: 2.795e-04, eta: 3:49:04, time: 0.755, data_time: 0.004, memory: 6939, loss_cls: 50.4725, loss_conf: 88.6398, loss_xy: 67.8731, loss_wh: 4.8492, loss: 211.8346, grad_norm: 1022.6706
+2024-01-18 17:49:06,527 - mmdet - INFO - Epoch [1][450/738]	lr: 3.021e-04, eta: 3:48:29, time: 0.763, data_time: 0.004, memory: 6939, loss_cls: 48.4830, loss_conf: 91.9302, loss_xy: 70.7601, loss_wh: 5.4143, loss: 216.5877, grad_norm: 1068.2493
+2024-01-18 17:49:44,301 - mmdet - INFO - Epoch [1][500/738]	lr: 3.246e-04, eta: 3:47:39, time: 0.755, data_time: 0.004, memory: 6939, loss_cls: 42.8103, loss_conf: 87.1861, loss_xy: 71.8179, loss_wh: 6.3605, loss: 208.1748, grad_norm: 1186.2753
+2024-01-18 17:50:21,037 - mmdet - INFO - Epoch [1][550/738]	lr: 3.470e-04, eta: 3:46:19, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 36.3447, loss_conf: 74.3260, loss_xy: 62.7088, loss_wh: 5.6771, loss: 179.0566, grad_norm: 1029.4429
+2024-01-18 17:50:59,413 - mmdet - INFO - Epoch [1][600/738]	lr: 3.695e-04, eta: 3:45:54, time: 0.768, data_time: 0.005, memory: 6939, loss_cls: 40.1091, loss_conf: 85.4579, loss_xy: 68.3243, loss_wh: 8.3555, loss: 202.2468, grad_norm: 1156.0717
+2024-01-18 17:51:36,779 - mmdet - INFO - Epoch [1][650/738]	lr: 3.921e-04, eta: 3:44:59, time: 0.747, data_time: 0.005, memory: 6939, loss_cls: 34.9295, loss_conf: 86.9453, loss_xy: 69.1883, loss_wh: 6.2611, loss: 197.3242, grad_norm: 1012.8761
+2024-01-18 17:52:14,736 - mmdet - INFO - Epoch [1][700/738]	lr: 4.145e-04, eta: 3:44:22, time: 0.759, data_time: 0.004, memory: 6939, loss_cls: 28.7374, loss_conf: 71.0320, loss_xy: 59.2621, loss_wh: 5.5413, loss: 164.5728, grad_norm: 942.0085
+2024-01-18 17:52:44,312 - mmdet - INFO - Saving checkpoint at 1 epochs
+2024-01-18 17:53:52,586 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 1459  | 0.868  | 0.613 |
+| Boat      | 289  | 4493  | 0.872  | 0.514 |
+| Bottle    | 282  | 2003  | 0.787  | 0.510 |
+| Bus       | 135  | 775   | 0.911  | 0.555 |
+| Car       | 597  | 6136  | 0.916  | 0.568 |
+| Cat       | 183  | 823   | 0.809  | 0.544 |
+| Chair     | 466  | 6589  | 0.863  | 0.532 |
+| Cup       | 366  | 3139  | 0.863  | 0.597 |
+| Dog       | 207  | 1122  | 0.894  | 0.657 |
+| Motorbike | 233  | 2367  | 0.777  | 0.518 |
+| People    | 1562 | 10593 | 0.894  | 0.700 |
+| Table     | 333  | 4815  | 0.757  | 0.276 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.549 |
++-----------+------+-------+--------+-------+
+2024-01-18 17:53:52,590 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 17:53:52,591 - mmdet - INFO - Epoch(val) [1][1467]	AP50: 0.5490, mAP: 0.5486
+2024-01-18 17:54:33,115 - mmdet - INFO - Epoch [2][50/738]	lr: 4.541e-04, eta: 3:33:27, time: 0.810, data_time: 0.058, memory: 6939, loss_cls: 28.6441, loss_conf: 80.6526, loss_xy: 68.8568, loss_wh: 7.0906, loss: 185.2441, grad_norm: 1012.1047
+2024-01-18 17:55:11,064 - mmdet - INFO - Epoch [2][100/738]	lr: 4.767e-04, eta: 3:33:26, time: 0.759, data_time: 0.005, memory: 6939, loss_cls: 27.2023, loss_conf: 78.5241, loss_xy: 67.2442, loss_wh: 6.4508, loss: 179.4214, grad_norm: 1028.9117
+2024-01-18 17:55:49,911 - mmdet - INFO - Epoch [2][150/738]	lr: 4.991e-04, eta: 3:33:39, time: 0.777, data_time: 0.004, memory: 6939, loss_cls: 27.6543, loss_conf: 84.9498, loss_xy: 70.7443, loss_wh: 6.0444, loss: 189.3929, grad_norm: 1029.3166
+2024-01-18 17:56:27,297 - mmdet - INFO - Epoch [2][200/738]	lr: 5.216e-04, eta: 3:33:19, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 24.3486, loss_conf: 73.1942, loss_xy: 64.9772, loss_wh: 7.4804, loss: 170.0004, grad_norm: 1010.0500
+2024-01-18 17:57:05,902 - mmdet - INFO - Epoch [2][250/738]	lr: 5.442e-04, eta: 3:33:19, time: 0.772, data_time: 0.004, memory: 6939, loss_cls: 24.3713, loss_conf: 78.8279, loss_xy: 69.5234, loss_wh: 8.4004, loss: 181.1229, grad_norm: 1038.4435
+2024-01-18 17:57:44,733 - mmdet - INFO - Epoch [2][300/738]	lr: 5.666e-04, eta: 3:33:19, time: 0.777, data_time: 0.005, memory: 6939, loss_cls: 25.0599, loss_conf: 76.9363, loss_xy: 67.9190, loss_wh: 7.5183, loss: 177.4336, grad_norm: 983.6562
+2024-01-18 17:58:23,115 - mmdet - INFO - Epoch [2][350/738]	lr: 5.891e-04, eta: 3:33:08, time: 0.768, data_time: 0.005, memory: 6939, loss_cls: 29.7357, loss_conf: 86.8544, loss_xy: 71.4956, loss_wh: 8.5587, loss: 196.6445, grad_norm: 1084.3266
+2024-01-18 17:59:02,847 - mmdet - INFO - Epoch [2][400/738]	lr: 6.117e-04, eta: 3:33:16, time: 0.795, data_time: 0.005, memory: 6939, loss_cls: 24.8040, loss_conf: 74.6247, loss_xy: 63.8105, loss_wh: 8.9468, loss: 172.1859, grad_norm: 964.6390
+2024-01-18 17:59:42,545 - mmdet - INFO - Epoch [2][450/738]	lr: 6.341e-04, eta: 3:33:18, time: 0.794, data_time: 0.005, memory: 6939, loss_cls: 23.7728, loss_conf: 79.9282, loss_xy: 67.2845, loss_wh: 7.5297, loss: 178.5152, grad_norm: 1011.8209
+2024-01-18 18:00:20,578 - mmdet - INFO - Epoch [2][500/738]	lr: 6.566e-04, eta: 3:32:55, time: 0.761, data_time: 0.005, memory: 6939, loss_cls: 22.8301, loss_conf: 72.5269, loss_xy: 65.8937, loss_wh: 7.4531, loss: 168.7038, grad_norm: 971.7567
+2024-01-18 18:00:59,736 - mmdet - INFO - Epoch [2][550/738]	lr: 6.791e-04, eta: 3:32:45, time: 0.783, data_time: 0.005, memory: 6939, loss_cls: 21.2928, loss_conf: 73.8258, loss_xy: 61.7939, loss_wh: 6.7809, loss: 163.6934, grad_norm: 935.3657
+2024-01-18 18:01:38,787 - mmdet - INFO - Epoch [2][600/738]	lr: 7.017e-04, eta: 3:32:31, time: 0.781, data_time: 0.005, memory: 6939, loss_cls: 23.6708, loss_conf: 80.5351, loss_xy: 66.7920, loss_wh: 8.2854, loss: 179.2833, grad_norm: 1075.4823
+2024-01-18 18:02:16,792 - mmdet - INFO - Epoch [2][650/738]	lr: 7.242e-04, eta: 3:32:03, time: 0.760, data_time: 0.004, memory: 6939, loss_cls: 24.0073, loss_conf: 79.0469, loss_xy: 67.7708, loss_wh: 7.1131, loss: 177.9381, grad_norm: 957.6020
+2024-01-18 18:02:53,913 - mmdet - INFO - Epoch [2][700/738]	lr: 7.467e-04, eta: 3:31:24, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 23.0453, loss_conf: 74.9579, loss_xy: 60.9069, loss_wh: 6.2066, loss: 165.1168, grad_norm: 916.7984
+2024-01-18 18:03:22,685 - mmdet - INFO - Saving checkpoint at 2 epochs
+2024-01-18 18:04:29,685 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 1191  | 0.703  | 0.276 |
+| Boat      | 289  | 3225  | 0.858  | 0.567 |
+| Bottle    | 282  | 3503  | 0.606  | 0.361 |
+| Bus       | 135  | 766   | 0.867  | 0.377 |
+| Car       | 597  | 4359  | 0.925  | 0.673 |
+| Cat       | 183  | 1730  | 0.852  | 0.342 |
+| Chair     | 466  | 6131  | 0.867  | 0.573 |
+| Cup       | 366  | 2479  | 0.825  | 0.579 |
+| Dog       | 207  | 2600  | 0.894  | 0.530 |
+| Motorbike | 233  | 2157  | 0.734  | 0.317 |
+| People    | 1562 | 13456 | 0.766  | 0.416 |
+| Table     | 333  | 4859  | 0.775  | 0.382 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.449 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:04:29,689 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:04:29,690 - mmdet - INFO - Epoch(val) [2][1467]	AP50: 0.4490, mAP: 0.4494
+2024-01-18 18:05:09,234 - mmdet - INFO - Epoch [3][50/738]	lr: 7.862e-04, eta: 3:25:29, time: 0.790, data_time: 0.053, memory: 6939, loss_cls: 18.6210, loss_conf: 71.1581, loss_xy: 62.5460, loss_wh: 8.7604, loss: 161.0854, grad_norm: 867.8079
+2024-01-18 18:05:46,014 - mmdet - INFO - Epoch [3][100/738]	lr: 8.088e-04, eta: 3:24:56, time: 0.736, data_time: 0.005, memory: 6939, loss_cls: 20.1795, loss_conf: 75.8383, loss_xy: 67.2358, loss_wh: 7.6108, loss: 170.8643, grad_norm: 950.4129
+2024-01-18 18:06:22,856 - mmdet - INFO - Epoch [3][150/738]	lr: 8.313e-04, eta: 3:24:24, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 25.3253, loss_conf: 87.1000, loss_xy: 74.0449, loss_wh: 8.5831, loss: 195.0533, grad_norm: 1013.0836
+2024-01-18 18:07:00,190 - mmdet - INFO - Epoch [3][200/738]	lr: 8.538e-04, eta: 3:23:56, time: 0.747, data_time: 0.005, memory: 6939, loss_cls: 19.4461, loss_conf: 77.7694, loss_xy: 65.9069, loss_wh: 8.3759, loss: 171.4983, grad_norm: 981.7510
+2024-01-18 18:07:38,952 - mmdet - INFO - Epoch [3][250/738]	lr: 8.763e-04, eta: 3:23:42, time: 0.775, data_time: 0.004, memory: 6939, loss_cls: 21.1099, loss_conf: 67.2608, loss_xy: 60.0853, loss_wh: 7.8696, loss: 156.3256, grad_norm: 931.0890
+2024-01-18 18:08:15,315 - mmdet - INFO - Epoch [3][300/738]	lr: 8.987e-04, eta: 3:23:04, time: 0.727, data_time: 0.004, memory: 6939, loss_cls: 20.4069, loss_conf: 71.2145, loss_xy: 62.3605, loss_wh: 7.7744, loss: 161.7562, grad_norm: 927.6249
+2024-01-18 18:08:54,329 - mmdet - INFO - Epoch [3][350/738]	lr: 9.213e-04, eta: 3:22:50, time: 0.780, data_time: 0.005, memory: 6939, loss_cls: 18.6266, loss_conf: 75.2378, loss_xy: 63.7116, loss_wh: 6.4632, loss: 164.0391, grad_norm: 900.2420
+2024-01-18 18:09:31,865 - mmdet - INFO - Epoch [3][400/738]	lr: 9.438e-04, eta: 3:22:22, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 22.3826, loss_conf: 81.9249, loss_xy: 69.1799, loss_wh: 8.8751, loss: 182.3626, grad_norm: 945.9837
+2024-01-18 18:10:09,609 - mmdet - INFO - Epoch [3][450/738]	lr: 9.663e-04, eta: 3:21:54, time: 0.755, data_time: 0.005, memory: 6939, loss_cls: 25.4266, loss_conf: 83.8908, loss_xy: 68.8369, loss_wh: 7.5930, loss: 185.7473, grad_norm: 1041.6078
+2024-01-18 18:10:48,943 - mmdet - INFO - Epoch [3][500/738]	lr: 9.888e-04, eta: 3:21:40, time: 0.787, data_time: 0.005, memory: 6939, loss_cls: 19.7212, loss_conf: 69.4130, loss_xy: 60.6042, loss_wh: 7.6787, loss: 157.4171, grad_norm: 880.8529
+2024-01-18 18:11:25,809 - mmdet - INFO - Epoch [3][550/738]	lr: 1.000e-03, eta: 3:21:05, time: 0.737, data_time: 0.005, memory: 6939, loss_cls: 24.0335, loss_conf: 87.0619, loss_xy: 72.4794, loss_wh: 6.9923, loss: 190.5671, grad_norm: 1031.7746
+2024-01-18 18:12:04,119 - mmdet - INFO - Epoch [3][600/738]	lr: 1.000e-03, eta: 3:20:40, time: 0.766, data_time: 0.004, memory: 6939, loss_cls: 23.1846, loss_conf: 85.8354, loss_xy: 70.8584, loss_wh: 7.6450, loss: 187.5235, grad_norm: 965.1626
+2024-01-18 18:12:42,376 - mmdet - INFO - Epoch [3][650/738]	lr: 1.000e-03, eta: 3:20:15, time: 0.765, data_time: 0.004, memory: 6939, loss_cls: 23.4129, loss_conf: 81.4179, loss_xy: 71.0519, loss_wh: 6.8728, loss: 182.7555, grad_norm: 970.4704
+2024-01-18 18:13:19,163 - mmdet - INFO - Epoch [3][700/738]	lr: 1.000e-03, eta: 3:19:38, time: 0.736, data_time: 0.004, memory: 6939, loss_cls: 17.7850, loss_conf: 64.9181, loss_xy: 57.7218, loss_wh: 5.6970, loss: 146.1219, grad_norm: 873.4387
+2024-01-18 18:13:46,656 - mmdet - INFO - Saving checkpoint at 3 epochs
+2024-01-18 18:14:40,834 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2238  | 0.915  | 0.684 |
+| Boat      | 289  | 2838  | 0.844  | 0.494 |
+| Bottle    | 282  | 5051  | 0.858  | 0.513 |
+| Bus       | 135  | 1111  | 0.963  | 0.813 |
+| Car       | 597  | 7669  | 0.910  | 0.681 |
+| Cat       | 183  | 2047  | 0.809  | 0.353 |
+| Chair     | 466  | 5502  | 0.813  | 0.532 |
+| Cup       | 366  | 6299  | 0.913  | 0.625 |
+| Dog       | 207  | 1614  | 0.884  | 0.599 |
+| Motorbike | 233  | 2884  | 0.845  | 0.577 |
+| People    | 1562 | 15048 | 0.891  | 0.655 |
+| Table     | 333  | 5043  | 0.805  | 0.427 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.579 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:14:40,839 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:14:40,840 - mmdet - INFO - Epoch(val) [3][1467]	AP50: 0.5790, mAP: 0.5794
+2024-01-18 18:15:21,228 - mmdet - INFO - Epoch [4][50/738]	lr: 1.000e-03, eta: 3:15:39, time: 0.807, data_time: 0.050, memory: 6939, loss_cls: 22.4601, loss_conf: 77.6939, loss_xy: 67.2883, loss_wh: 7.6606, loss: 175.1029, grad_norm: 854.6028
+2024-01-18 18:15:59,169 - mmdet - INFO - Epoch [4][100/738]	lr: 1.000e-03, eta: 3:15:14, time: 0.759, data_time: 0.005, memory: 6939, loss_cls: 18.2246, loss_conf: 66.5784, loss_xy: 62.0815, loss_wh: 6.9581, loss: 153.8425, grad_norm: 866.2874
+2024-01-18 18:16:36,359 - mmdet - INFO - Epoch [4][150/738]	lr: 1.000e-03, eta: 3:14:44, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 21.9528, loss_conf: 76.2494, loss_xy: 65.7268, loss_wh: 7.4539, loss: 171.3829, grad_norm: 942.0087
+2024-01-18 18:17:15,436 - mmdet - INFO - Epoch [4][200/738]	lr: 1.000e-03, eta: 3:14:26, time: 0.782, data_time: 0.005, memory: 6939, loss_cls: 20.4068, loss_conf: 74.0237, loss_xy: 64.2349, loss_wh: 6.3364, loss: 165.0018, grad_norm: 934.6512
+2024-01-18 18:17:53,526 - mmdet - INFO - Epoch [4][250/738]	lr: 1.000e-03, eta: 3:14:01, time: 0.762, data_time: 0.005, memory: 6939, loss_cls: 20.9195, loss_conf: 78.0010, loss_xy: 69.4258, loss_wh: 6.7957, loss: 175.1420, grad_norm: 842.8423
+2024-01-18 18:18:30,982 - mmdet - INFO - Epoch [4][300/738]	lr: 1.000e-03, eta: 3:13:31, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 18.6969, loss_conf: 73.5488, loss_xy: 61.8300, loss_wh: 5.3222, loss: 159.3979, grad_norm: 873.2821
+2024-01-18 18:19:07,423 - mmdet - INFO - Epoch [4][350/738]	lr: 1.000e-03, eta: 3:12:54, time: 0.729, data_time: 0.004, memory: 6939, loss_cls: 19.7214, loss_conf: 73.7146, loss_xy: 64.1475, loss_wh: 6.0059, loss: 163.5894, grad_norm: 848.9779
+2024-01-18 18:19:43,910 - mmdet - INFO - Epoch [4][400/738]	lr: 1.000e-03, eta: 3:12:18, time: 0.730, data_time: 0.005, memory: 6939, loss_cls: 25.0058, loss_conf: 82.7296, loss_xy: 70.9151, loss_wh: 7.4754, loss: 186.1260, grad_norm: 978.5739
+2024-01-18 18:20:23,549 - mmdet - INFO - Epoch [4][450/738]	lr: 1.000e-03, eta: 3:12:01, time: 0.793, data_time: 0.005, memory: 6939, loss_cls: 18.8027, loss_conf: 76.4316, loss_xy: 64.9589, loss_wh: 5.7116, loss: 165.9047, grad_norm: 828.1345
+2024-01-18 18:21:01,698 - mmdet - INFO - Epoch [4][500/738]	lr: 1.000e-03, eta: 3:11:34, time: 0.763, data_time: 0.005, memory: 6939, loss_cls: 17.6213, loss_conf: 75.2238, loss_xy: 64.0544, loss_wh: 6.4868, loss: 163.3863, grad_norm: 881.3440
+2024-01-18 18:21:40,563 - mmdet - INFO - Epoch [4][550/738]	lr: 1.000e-03, eta: 3:11:11, time: 0.777, data_time: 0.005, memory: 6939, loss_cls: 17.6764, loss_conf: 80.4010, loss_xy: 67.3940, loss_wh: 5.1535, loss: 170.6249, grad_norm: 908.1086
+2024-01-18 18:22:18,566 - mmdet - INFO - Epoch [4][600/738]	lr: 1.000e-03, eta: 3:10:42, time: 0.760, data_time: 0.005, memory: 6939, loss_cls: 22.3592, loss_conf: 82.9470, loss_xy: 68.1396, loss_wh: 5.5562, loss: 179.0019, grad_norm: 852.9941
+2024-01-18 18:22:55,359 - mmdet - INFO - Epoch [4][650/738]	lr: 1.000e-03, eta: 3:10:07, time: 0.736, data_time: 0.004, memory: 6939, loss_cls: 16.9988, loss_conf: 75.4978, loss_xy: 65.4557, loss_wh: 5.7939, loss: 163.7461, grad_norm: 780.4277
+2024-01-18 18:23:34,563 - mmdet - INFO - Epoch [4][700/738]	lr: 1.000e-03, eta: 3:09:44, time: 0.784, data_time: 0.004, memory: 6939, loss_cls: 21.1427, loss_conf: 72.6673, loss_xy: 64.9171, loss_wh: 4.9886, loss: 163.7157, grad_norm: 841.9073
+2024-01-18 18:24:02,519 - mmdet - INFO - Saving checkpoint at 4 epochs
+2024-01-18 18:24:56,633 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2705  | 0.896  | 0.739 |
+| Boat      | 289  | 3269  | 0.844  | 0.479 |
+| Bottle    | 282  | 2365  | 0.780  | 0.612 |
+| Bus       | 135  | 1792  | 0.970  | 0.839 |
+| Car       | 597  | 6044  | 0.888  | 0.629 |
+| Cat       | 183  | 1185  | 0.814  | 0.530 |
+| Chair     | 466  | 4872  | 0.824  | 0.574 |
+| Cup       | 366  | 2276  | 0.844  | 0.649 |
+| Dog       | 207  | 1662  | 0.894  | 0.591 |
+| Motorbike | 233  | 4064  | 0.897  | 0.595 |
+| People    | 1562 | 13598 | 0.894  | 0.684 |
+| Table     | 333  | 4034  | 0.775  | 0.435 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.613 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:24:56,638 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:24:56,639 - mmdet - INFO - Epoch(val) [4][1467]	AP50: 0.6130, mAP: 0.6130
+2024-01-18 18:25:36,630 - mmdet - INFO - Epoch [5][50/738]	lr: 1.000e-03, eta: 3:06:33, time: 0.800, data_time: 0.049, memory: 6939, loss_cls: 16.5495, loss_conf: 69.8426, loss_xy: 63.2970, loss_wh: 4.3190, loss: 154.0080, grad_norm: 848.1689
+2024-01-18 18:26:15,066 - mmdet - INFO - Epoch [5][100/738]	lr: 1.000e-03, eta: 3:06:08, time: 0.769, data_time: 0.005, memory: 6939, loss_cls: 16.2249, loss_conf: 66.6112, loss_xy: 60.8710, loss_wh: 4.9419, loss: 148.6490, grad_norm: 842.8507
+2024-01-18 18:26:54,191 - mmdet - INFO - Epoch [5][150/738]	lr: 1.000e-03, eta: 3:05:46, time: 0.782, data_time: 0.005, memory: 6939, loss_cls: 16.8531, loss_conf: 75.9328, loss_xy: 66.7151, loss_wh: 5.2600, loss: 164.7610, grad_norm: 897.8158
+2024-01-18 18:27:31,726 - mmdet - INFO - Epoch [5][200/738]	lr: 1.000e-03, eta: 3:05:16, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 16.2401, loss_conf: 74.7212, loss_xy: 68.9504, loss_wh: 4.8579, loss: 164.7695, grad_norm: 850.4204
+2024-01-18 18:28:09,425 - mmdet - INFO - Epoch [5][250/738]	lr: 1.000e-03, eta: 3:04:46, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 18.2627, loss_conf: 74.1315, loss_xy: 63.8132, loss_wh: 6.7054, loss: 162.9128, grad_norm: 874.4564
+2024-01-18 18:28:47,608 - mmdet - INFO - Epoch [5][300/738]	lr: 1.000e-03, eta: 3:04:18, time: 0.764, data_time: 0.005, memory: 6939, loss_cls: 19.9116, loss_conf: 76.0553, loss_xy: 64.2827, loss_wh: 4.9452, loss: 165.1948, grad_norm: 857.9227
+2024-01-18 18:29:24,654 - mmdet - INFO - Epoch [5][350/738]	lr: 1.000e-03, eta: 3:03:45, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 19.4858, loss_conf: 84.5675, loss_xy: 71.9920, loss_wh: 5.5393, loss: 181.5846, grad_norm: 915.1691
+2024-01-18 18:30:02,747 - mmdet - INFO - Epoch [5][400/738]	lr: 1.000e-03, eta: 3:03:16, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 18.9566, loss_conf: 69.2171, loss_xy: 64.4679, loss_wh: 4.7085, loss: 157.3502, grad_norm: 849.0363
+2024-01-18 18:30:41,559 - mmdet - INFO - Epoch [5][450/738]	lr: 1.000e-03, eta: 3:02:50, time: 0.776, data_time: 0.005, memory: 6939, loss_cls: 18.5248, loss_conf: 78.8911, loss_xy: 66.1211, loss_wh: 5.3047, loss: 168.8418, grad_norm: 844.2538
+2024-01-18 18:31:18,486 - mmdet - INFO - Epoch [5][500/738]	lr: 1.000e-03, eta: 3:02:16, time: 0.739, data_time: 0.005, memory: 6939, loss_cls: 19.8970, loss_conf: 74.2381, loss_xy: 69.4582, loss_wh: 6.0050, loss: 169.5982, grad_norm: 832.3698
+2024-01-18 18:31:57,482 - mmdet - INFO - Epoch [5][550/738]	lr: 1.000e-03, eta: 3:01:50, time: 0.780, data_time: 0.005, memory: 6939, loss_cls: 21.8476, loss_conf: 74.5545, loss_xy: 64.5934, loss_wh: 4.4704, loss: 165.4660, grad_norm: 941.7962
+2024-01-18 18:32:35,142 - mmdet - INFO - Epoch [5][600/738]	lr: 1.000e-03, eta: 3:01:19, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 16.4778, loss_conf: 66.5336, loss_xy: 59.9590, loss_wh: 4.1147, loss: 147.0851, grad_norm: 855.8673
+2024-01-18 18:33:12,254 - mmdet - INFO - Epoch [5][650/738]	lr: 1.000e-03, eta: 3:00:45, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 18.7578, loss_conf: 75.1645, loss_xy: 66.1114, loss_wh: 5.1076, loss: 165.1412, grad_norm: 864.7041
+2024-01-18 18:33:48,696 - mmdet - INFO - Epoch [5][700/738]	lr: 1.000e-03, eta: 3:00:08, time: 0.729, data_time: 0.004, memory: 6939, loss_cls: 16.1848, loss_conf: 74.1372, loss_xy: 61.0514, loss_wh: 4.2842, loss: 155.6576, grad_norm: 839.3641
+2024-01-18 18:34:17,623 - mmdet - INFO - Saving checkpoint at 5 epochs
+2024-01-18 18:35:15,208 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 1803  | 0.835  | 0.641 |
+| Boat      | 289  | 2437  | 0.869  | 0.618 |
+| Bottle    | 282  | 2544  | 0.702  | 0.405 |
+| Bus       | 135  | 1258  | 0.933  | 0.866 |
+| Car       | 597  | 7367  | 0.930  | 0.739 |
+| Cat       | 183  | 1958  | 0.858  | 0.554 |
+| Chair     | 466  | 6572  | 0.858  | 0.619 |
+| Cup       | 366  | 2717  | 0.858  | 0.624 |
+| Dog       | 207  | 1920  | 0.889  | 0.574 |
+| Motorbike | 233  | 3168  | 0.888  | 0.592 |
+| People    | 1562 | 10704 | 0.905  | 0.727 |
+| Table     | 333  | 4522  | 0.790  | 0.483 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.620 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:35:15,233 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:35:15,234 - mmdet - INFO - Epoch(val) [5][1467]	AP50: 0.6200, mAP: 0.6202
+2024-01-18 18:35:56,346 - mmdet - INFO - Epoch [6][50/738]	lr: 1.000e-03, eta: 2:57:32, time: 0.822, data_time: 0.050, memory: 6939, loss_cls: 16.2127, loss_conf: 63.9289, loss_xy: 58.3773, loss_wh: 4.1466, loss: 142.6656, grad_norm: 756.7150
+2024-01-18 18:36:35,443 - mmdet - INFO - Epoch [6][100/738]	lr: 1.000e-03, eta: 2:57:07, time: 0.782, data_time: 0.005, memory: 6939, loss_cls: 15.6166, loss_conf: 70.8399, loss_xy: 64.4225, loss_wh: 5.5010, loss: 156.3799, grad_norm: 820.0069
+2024-01-18 18:37:13,075 - mmdet - INFO - Epoch [6][150/738]	lr: 1.000e-03, eta: 2:56:36, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 16.2272, loss_conf: 72.1675, loss_xy: 63.9140, loss_wh: 5.5158, loss: 157.8245, grad_norm: 859.4373
+2024-01-18 18:37:48,980 - mmdet - INFO - Epoch [6][200/738]	lr: 1.000e-03, eta: 2:55:59, time: 0.718, data_time: 0.004, memory: 6939, loss_cls: 16.8302, loss_conf: 72.9613, loss_xy: 66.4981, loss_wh: 5.2589, loss: 161.5486, grad_norm: 796.1001
+2024-01-18 18:38:26,865 - mmdet - INFO - Epoch [6][250/738]	lr: 1.000e-03, eta: 2:55:28, time: 0.758, data_time: 0.004, memory: 6939, loss_cls: 18.1854, loss_conf: 66.2363, loss_xy: 60.4953, loss_wh: 4.9279, loss: 149.8449, grad_norm: 770.2582
+2024-01-18 18:39:05,301 - mmdet - INFO - Epoch [6][300/738]	lr: 1.000e-03, eta: 2:55:00, time: 0.769, data_time: 0.005, memory: 6939, loss_cls: 15.7243, loss_conf: 68.7970, loss_xy: 59.9286, loss_wh: 4.3030, loss: 148.7528, grad_norm: 808.4779
+2024-01-18 18:39:44,048 - mmdet - INFO - Epoch [6][350/738]	lr: 1.000e-03, eta: 2:54:32, time: 0.775, data_time: 0.004, memory: 6939, loss_cls: 13.5297, loss_conf: 71.7608, loss_xy: 66.1346, loss_wh: 5.7012, loss: 157.1262, grad_norm: 782.1960
+2024-01-18 18:40:21,271 - mmdet - INFO - Epoch [6][400/738]	lr: 1.000e-03, eta: 2:53:59, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 18.9548, loss_conf: 80.2189, loss_xy: 71.9378, loss_wh: 5.1988, loss: 176.3103, grad_norm: 855.5021
+2024-01-18 18:40:57,696 - mmdet - INFO - Epoch [6][450/738]	lr: 1.000e-03, eta: 2:53:23, time: 0.729, data_time: 0.004, memory: 6939, loss_cls: 16.9497, loss_conf: 74.9529, loss_xy: 66.1018, loss_wh: 4.6199, loss: 162.6242, grad_norm: 817.1533
+2024-01-18 18:41:35,124 - mmdet - INFO - Epoch [6][500/738]	lr: 1.000e-03, eta: 2:52:50, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 16.9395, loss_conf: 74.4434, loss_xy: 65.8510, loss_wh: 5.0537, loss: 162.2876, grad_norm: 824.0234
+2024-01-18 18:42:13,245 - mmdet - INFO - Epoch [6][550/738]	lr: 1.000e-03, eta: 2:52:20, time: 0.762, data_time: 0.005, memory: 6939, loss_cls: 17.4752, loss_conf: 69.1403, loss_xy: 61.7799, loss_wh: 5.9065, loss: 154.3019, grad_norm: 910.7172
+2024-01-18 18:42:49,430 - mmdet - INFO - Epoch [6][600/738]	lr: 1.000e-03, eta: 2:51:43, time: 0.724, data_time: 0.004, memory: 6939, loss_cls: 16.9459, loss_conf: 75.8233, loss_xy: 68.3963, loss_wh: 5.5171, loss: 166.6826, grad_norm: 837.9574
+2024-01-18 18:43:27,486 - mmdet - INFO - Epoch [6][650/738]	lr: 1.000e-03, eta: 2:51:12, time: 0.761, data_time: 0.004, memory: 6939, loss_cls: 18.2206, loss_conf: 71.6931, loss_xy: 68.1962, loss_wh: 6.3933, loss: 164.5032, grad_norm: 818.3148
+2024-01-18 18:44:06,596 - mmdet - INFO - Epoch [6][700/738]	lr: 1.000e-03, eta: 2:50:44, time: 0.782, data_time: 0.004, memory: 6939, loss_cls: 18.1806, loss_conf: 73.7775, loss_xy: 68.1861, loss_wh: 4.9378, loss: 165.0820, grad_norm: 831.5752
+2024-01-18 18:44:35,150 - mmdet - INFO - Saving checkpoint at 6 epochs
+2024-01-18 18:45:25,320 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2397  | 0.920  | 0.697 |
+| Boat      | 289  | 2379  | 0.889  | 0.542 |
+| Bottle    | 282  | 3879  | 0.901  | 0.685 |
+| Bus       | 135  | 761   | 0.985  | 0.899 |
+| Car       | 597  | 5950  | 0.948  | 0.787 |
+| Cat       | 183  | 1630  | 0.885  | 0.592 |
+| Chair     | 466  | 8228  | 0.878  | 0.582 |
+| Cup       | 366  | 2853  | 0.874  | 0.686 |
+| Dog       | 207  | 1578  | 0.923  | 0.633 |
+| Motorbike | 233  | 2136  | 0.858  | 0.606 |
+| People    | 1562 | 11561 | 0.933  | 0.778 |
+| Table     | 333  | 5729  | 0.787  | 0.397 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.657 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:45:25,324 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:45:25,325 - mmdet - INFO - Epoch(val) [6][1467]	AP50: 0.6570, mAP: 0.6570
+2024-01-18 18:46:04,638 - mmdet - INFO - Epoch [7][50/738]	lr: 1.000e-03, eta: 2:48:23, time: 0.786, data_time: 0.050, memory: 6939, loss_cls: 16.3890, loss_conf: 65.4316, loss_xy: 62.1744, loss_wh: 4.0743, loss: 148.0694, grad_norm: 768.5483
+2024-01-18 18:46:40,495 - mmdet - INFO - Epoch [7][100/738]	lr: 1.000e-03, eta: 2:47:46, time: 0.717, data_time: 0.004, memory: 6939, loss_cls: 13.1107, loss_conf: 63.2440, loss_xy: 63.0348, loss_wh: 3.9623, loss: 143.3519, grad_norm: 803.8895
+2024-01-18 18:47:17,649 - mmdet - INFO - Epoch [7][150/738]	lr: 1.000e-03, eta: 2:47:12, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 18.1609, loss_conf: 71.3045, loss_xy: 64.9607, loss_wh: 4.3775, loss: 158.8037, grad_norm: 809.2313
+2024-01-18 18:47:56,095 - mmdet - INFO - Epoch [7][200/738]	lr: 1.000e-03, eta: 2:46:43, time: 0.769, data_time: 0.004, memory: 6939, loss_cls: 15.5101, loss_conf: 67.4152, loss_xy: 63.1303, loss_wh: 4.8543, loss: 150.9099, grad_norm: 750.3608
+2024-01-18 18:48:32,673 - mmdet - INFO - Epoch [7][250/738]	lr: 1.000e-03, eta: 2:46:08, time: 0.732, data_time: 0.004, memory: 6939, loss_cls: 15.7658, loss_conf: 72.1929, loss_xy: 67.2654, loss_wh: 5.3169, loss: 160.5411, grad_norm: 787.7388
+2024-01-18 18:49:09,350 - mmdet - INFO - Epoch [7][300/738]	lr: 1.000e-03, eta: 2:45:33, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 18.6196, loss_conf: 75.9924, loss_xy: 69.5235, loss_wh: 4.7988, loss: 168.9343, grad_norm: 834.4402
+2024-01-18 18:49:47,259 - mmdet - INFO - Epoch [7][350/738]	lr: 1.000e-03, eta: 2:45:02, time: 0.758, data_time: 0.004, memory: 6939, loss_cls: 16.9148, loss_conf: 72.5167, loss_xy: 66.6961, loss_wh: 4.2288, loss: 160.3564, grad_norm: 880.7574
+2024-01-18 18:50:24,665 - mmdet - INFO - Epoch [7][400/738]	lr: 1.000e-03, eta: 2:44:29, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 17.0996, loss_conf: 71.9937, loss_xy: 63.9824, loss_wh: 4.1601, loss: 157.2358, grad_norm: 854.5277
+2024-01-18 18:51:01,365 - mmdet - INFO - Epoch [7][450/738]	lr: 1.000e-03, eta: 2:43:54, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 16.6679, loss_conf: 70.2952, loss_xy: 63.9760, loss_wh: 4.8663, loss: 155.8053, grad_norm: 858.5163
+2024-01-18 18:51:39,795 - mmdet - INFO - Epoch [7][500/738]	lr: 1.000e-03, eta: 2:43:24, time: 0.769, data_time: 0.005, memory: 6939, loss_cls: 15.5019, loss_conf: 74.3267, loss_xy: 63.0780, loss_wh: 3.9374, loss: 156.8441, grad_norm: 930.4120
+2024-01-18 18:52:17,012 - mmdet - INFO - Epoch [7][550/738]	lr: 1.000e-03, eta: 2:42:50, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 20.4375, loss_conf: 77.1884, loss_xy: 68.8343, loss_wh: 5.1061, loss: 171.5664, grad_norm: 902.1714
+2024-01-18 18:52:54,875 - mmdet - INFO - Epoch [7][600/738]	lr: 1.000e-03, eta: 2:42:18, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 15.6880, loss_conf: 73.2154, loss_xy: 66.1038, loss_wh: 4.2589, loss: 159.2661, grad_norm: 839.2525
+2024-01-18 18:53:32,572 - mmdet - INFO - Epoch [7][650/738]	lr: 1.000e-03, eta: 2:41:46, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 15.4237, loss_conf: 69.2736, loss_xy: 60.4131, loss_wh: 3.9075, loss: 149.0180, grad_norm: 812.1053
+2024-01-18 18:54:10,172 - mmdet - INFO - Epoch [7][700/738]	lr: 1.000e-03, eta: 2:41:13, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 16.6130, loss_conf: 70.8237, loss_xy: 67.5262, loss_wh: 4.7494, loss: 159.7123, grad_norm: 710.2182
+2024-01-18 18:54:38,505 - mmdet - INFO - Saving checkpoint at 7 epochs
+2024-01-18 18:55:28,880 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2183  | 0.892  | 0.637 |
+| Boat      | 289  | 2374  | 0.907  | 0.682 |
+| Bottle    | 282  | 3252  | 0.879  | 0.677 |
+| Bus       | 135  | 663   | 0.978  | 0.904 |
+| Car       | 597  | 4432  | 0.923  | 0.761 |
+| Cat       | 183  | 1381  | 0.836  | 0.570 |
+| Chair     | 466  | 5920  | 0.845  | 0.606 |
+| Cup       | 366  | 3196  | 0.842  | 0.646 |
+| Dog       | 207  | 1270  | 0.932  | 0.709 |
+| Motorbike | 233  | 1725  | 0.815  | 0.659 |
+| People    | 1562 | 11076 | 0.918  | 0.749 |
+| Table     | 333  | 4278  | 0.784  | 0.394 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.666 |
++-----------+------+-------+--------+-------+
+2024-01-18 18:55:28,884 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 18:55:28,885 - mmdet - INFO - Epoch(val) [7][1467]	AP50: 0.6660, mAP: 0.6660
+2024-01-18 18:56:07,688 - mmdet - INFO - Epoch [8][50/738]	lr: 1.000e-03, eta: 2:39:05, time: 0.776, data_time: 0.049, memory: 6939, loss_cls: 16.5040, loss_conf: 69.9673, loss_xy: 63.0510, loss_wh: 4.1213, loss: 153.6435, grad_norm: 807.6970
+2024-01-18 18:56:44,766 - mmdet - INFO - Epoch [8][100/738]	lr: 1.000e-03, eta: 2:38:32, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 13.6500, loss_conf: 63.0556, loss_xy: 61.9644, loss_wh: 3.4728, loss: 142.1428, grad_norm: 701.2285
+2024-01-18 18:57:21,889 - mmdet - INFO - Epoch [8][150/738]	lr: 1.000e-03, eta: 2:37:58, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 17.3919, loss_conf: 69.9852, loss_xy: 67.1635, loss_wh: 3.8467, loss: 158.3873, grad_norm: 709.3848
+2024-01-18 18:57:57,433 - mmdet - INFO - Epoch [8][200/738]	lr: 1.000e-03, eta: 2:37:21, time: 0.711, data_time: 0.004, memory: 6939, loss_cls: 15.1638, loss_conf: 67.6625, loss_xy: 64.5751, loss_wh: 3.8312, loss: 151.2326, grad_norm: 776.8391
+2024-01-18 18:58:34,458 - mmdet - INFO - Epoch [8][250/738]	lr: 1.000e-03, eta: 2:36:47, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 13.7967, loss_conf: 71.0605, loss_xy: 66.5451, loss_wh: 4.4092, loss: 155.8115, grad_norm: 762.2715
+2024-01-18 18:59:11,287 - mmdet - INFO - Epoch [8][300/738]	lr: 1.000e-03, eta: 2:36:13, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 15.7808, loss_conf: 71.9143, loss_xy: 66.2146, loss_wh: 3.5254, loss: 157.4351, grad_norm: 833.6055
+2024-01-18 18:59:48,851 - mmdet - INFO - Epoch [8][350/738]	lr: 1.000e-03, eta: 2:35:40, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 12.7366, loss_conf: 66.0099, loss_xy: 59.6468, loss_wh: 3.6098, loss: 142.0031, grad_norm: 722.5040
+2024-01-18 19:00:25,485 - mmdet - INFO - Epoch [8][400/738]	lr: 1.000e-03, eta: 2:35:05, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 16.1554, loss_conf: 71.2355, loss_xy: 67.4153, loss_wh: 4.2888, loss: 159.0950, grad_norm: 730.9755
+2024-01-18 19:01:02,398 - mmdet - INFO - Epoch [8][450/738]	lr: 1.000e-03, eta: 2:34:31, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 14.4988, loss_conf: 71.3944, loss_xy: 66.9026, loss_wh: 3.8223, loss: 156.6180, grad_norm: 736.2136
+2024-01-18 19:01:39,487 - mmdet - INFO - Epoch [8][500/738]	lr: 1.000e-03, eta: 2:33:57, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 16.0006, loss_conf: 75.0254, loss_xy: 66.3080, loss_wh: 4.3020, loss: 161.6360, grad_norm: 797.6792
+2024-01-18 19:02:16,946 - mmdet - INFO - Epoch [8][550/738]	lr: 1.000e-03, eta: 2:33:24, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 15.6743, loss_conf: 62.6936, loss_xy: 61.1068, loss_wh: 3.5319, loss: 143.0067, grad_norm: 756.1747
+2024-01-18 19:02:55,027 - mmdet - INFO - Epoch [8][600/738]	lr: 1.000e-03, eta: 2:32:52, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 15.9874, loss_conf: 72.6087, loss_xy: 63.8645, loss_wh: 4.3234, loss: 156.7840, grad_norm: 811.1179
+2024-01-18 19:03:33,131 - mmdet - INFO - Epoch [8][650/738]	lr: 1.000e-03, eta: 2:32:20, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 21.3445, loss_conf: 74.9348, loss_xy: 68.9917, loss_wh: 4.8051, loss: 170.0761, grad_norm: 838.2615
+2024-01-18 19:04:10,245 - mmdet - INFO - Epoch [8][700/738]	lr: 1.000e-03, eta: 2:31:46, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 16.0252, loss_conf: 70.2583, loss_xy: 68.5340, loss_wh: 4.3304, loss: 159.1479, grad_norm: 786.9124
+2024-01-18 19:04:38,221 - mmdet - INFO - Saving checkpoint at 8 epochs
+2024-01-18 19:05:28,472 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 2608 | 0.910  | 0.718 |
+| Boat      | 289  | 2198 | 0.910  | 0.745 |
+| Bottle    | 282  | 2783 | 0.830  | 0.559 |
+| Bus       | 135  | 669  | 0.874  | 0.758 |
+| Car       | 597  | 4433 | 0.926  | 0.769 |
+| Cat       | 183  | 1609 | 0.874  | 0.558 |
+| Chair     | 466  | 5229 | 0.833  | 0.587 |
+| Cup       | 366  | 3039 | 0.902  | 0.710 |
+| Dog       | 207  | 1743 | 0.923  | 0.729 |
+| Motorbike | 233  | 3914 | 0.897  | 0.623 |
+| People    | 1562 | 9729 | 0.901  | 0.754 |
+| Table     | 333  | 4368 | 0.805  | 0.504 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.668 |
++-----------+------+------+--------+-------+
+2024-01-18 19:05:28,477 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:05:28,477 - mmdet - INFO - Epoch(val) [8][1467]	AP50: 0.6680, mAP: 0.6678
+2024-01-18 19:06:07,855 - mmdet - INFO - Epoch [9][50/738]	lr: 1.000e-03, eta: 2:29:51, time: 0.787, data_time: 0.049, memory: 6939, loss_cls: 14.7052, loss_conf: 62.9435, loss_xy: 61.2395, loss_wh: 3.7922, loss: 142.6803, grad_norm: 878.1001
+2024-01-18 19:06:44,280 - mmdet - INFO - Epoch [9][100/738]	lr: 1.000e-03, eta: 2:29:16, time: 0.728, data_time: 0.005, memory: 6939, loss_cls: 15.7819, loss_conf: 67.9120, loss_xy: 66.7477, loss_wh: 4.4563, loss: 154.8979, grad_norm: 761.2849
+2024-01-18 19:07:20,214 - mmdet - INFO - Epoch [9][150/738]	lr: 1.000e-03, eta: 2:28:40, time: 0.719, data_time: 0.004, memory: 6939, loss_cls: 14.0318, loss_conf: 71.8066, loss_xy: 68.4911, loss_wh: 3.8340, loss: 158.1634, grad_norm: 807.4349
+2024-01-18 19:07:58,256 - mmdet - INFO - Epoch [9][200/738]	lr: 1.000e-03, eta: 2:28:08, time: 0.761, data_time: 0.004, memory: 6939, loss_cls: 13.0390, loss_conf: 66.8090, loss_xy: 61.8763, loss_wh: 3.7485, loss: 145.4728, grad_norm: 755.0520
+2024-01-18 19:08:33,566 - mmdet - INFO - Epoch [9][250/738]	lr: 1.000e-03, eta: 2:27:31, time: 0.706, data_time: 0.004, memory: 6939, loss_cls: 13.7708, loss_conf: 64.3169, loss_xy: 63.2528, loss_wh: 3.8687, loss: 145.2092, grad_norm: 745.3570
+2024-01-18 19:09:11,421 - mmdet - INFO - Epoch [9][300/738]	lr: 1.000e-03, eta: 2:26:59, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 17.8418, loss_conf: 71.7485, loss_xy: 68.6187, loss_wh: 4.9881, loss: 163.1972, grad_norm: 764.1378
+2024-01-18 19:09:48,866 - mmdet - INFO - Epoch [9][350/738]	lr: 1.000e-03, eta: 2:26:25, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 17.5220, loss_conf: 71.3096, loss_xy: 68.9655, loss_wh: 4.4695, loss: 162.2665, grad_norm: 810.7190
+2024-01-18 19:10:26,234 - mmdet - INFO - Epoch [9][400/738]	lr: 1.000e-03, eta: 2:25:52, time: 0.747, data_time: 0.004, memory: 6939, loss_cls: 14.7527, loss_conf: 73.0935, loss_xy: 68.1571, loss_wh: 4.1518, loss: 160.1550, grad_norm: 811.5094
+2024-01-18 19:11:04,550 - mmdet - INFO - Epoch [9][450/738]	lr: 1.000e-03, eta: 2:25:20, time: 0.766, data_time: 0.004, memory: 6939, loss_cls: 14.0621, loss_conf: 66.5038, loss_xy: 63.7222, loss_wh: 3.7292, loss: 148.0173, grad_norm: 797.9568
+2024-01-18 19:11:41,411 - mmdet - INFO - Epoch [9][500/738]	lr: 1.000e-03, eta: 2:24:46, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 15.4527, loss_conf: 67.8726, loss_xy: 66.8544, loss_wh: 4.1777, loss: 154.3574, grad_norm: 764.6790
+2024-01-18 19:12:20,549 - mmdet - INFO - Epoch [9][550/738]	lr: 1.000e-03, eta: 2:24:15, time: 0.783, data_time: 0.004, memory: 6939, loss_cls: 12.6523, loss_conf: 66.8779, loss_xy: 63.9327, loss_wh: 3.7005, loss: 147.1634, grad_norm: 701.3456
+2024-01-18 19:12:58,261 - mmdet - INFO - Epoch [9][600/738]	lr: 1.000e-03, eta: 2:23:42, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 15.3460, loss_conf: 68.2407, loss_xy: 65.0730, loss_wh: 3.8227, loss: 152.4824, grad_norm: 774.8743
+2024-01-18 19:13:33,955 - mmdet - INFO - Epoch [9][650/738]	lr: 1.000e-03, eta: 2:23:05, time: 0.714, data_time: 0.004, memory: 6939, loss_cls: 13.7732, loss_conf: 66.2934, loss_xy: 63.0131, loss_wh: 3.9033, loss: 146.9829, grad_norm: 744.5051
+2024-01-18 19:14:11,109 - mmdet - INFO - Epoch [9][700/738]	lr: 1.000e-03, eta: 2:22:31, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 13.8240, loss_conf: 63.4095, loss_xy: 59.7784, loss_wh: 3.4385, loss: 140.4504, grad_norm: 679.5441
+2024-01-18 19:14:38,467 - mmdet - INFO - Saving checkpoint at 9 epochs
+2024-01-18 19:15:28,712 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2801  | 0.920  | 0.760 |
+| Boat      | 289  | 2266  | 0.893  | 0.682 |
+| Bottle    | 282  | 3835  | 0.911  | 0.698 |
+| Bus       | 135  | 768   | 0.970  | 0.897 |
+| Car       | 597  | 4701  | 0.933  | 0.801 |
+| Cat       | 183  | 899   | 0.869  | 0.574 |
+| Chair     | 466  | 4832  | 0.833  | 0.635 |
+| Cup       | 366  | 3413  | 0.926  | 0.698 |
+| Dog       | 207  | 1536  | 0.952  | 0.649 |
+| Motorbike | 233  | 3525  | 0.906  | 0.645 |
+| People    | 1562 | 11844 | 0.925  | 0.757 |
+| Table     | 333  | 5379  | 0.835  | 0.410 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.684 |
++-----------+------+-------+--------+-------+
+2024-01-18 19:15:28,717 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:15:28,717 - mmdet - INFO - Epoch(val) [9][1467]	AP50: 0.6840, mAP: 0.6839
+2024-01-18 19:16:07,753 - mmdet - INFO - Epoch [10][50/738]	lr: 1.000e-03, eta: 2:20:45, time: 0.780, data_time: 0.050, memory: 6939, loss_cls: 12.4354, loss_conf: 58.5557, loss_xy: 59.3064, loss_wh: 3.5646, loss: 133.8621, grad_norm: 697.0437
+2024-01-18 19:16:44,802 - mmdet - INFO - Epoch [10][100/738]	lr: 1.000e-03, eta: 2:20:11, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 14.1837, loss_conf: 65.1536, loss_xy: 61.3497, loss_wh: 3.3351, loss: 144.0221, grad_norm: 746.8680
+2024-01-18 19:17:21,856 - mmdet - INFO - Epoch [10][150/738]	lr: 1.000e-03, eta: 2:19:37, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 17.5150, loss_conf: 70.4518, loss_xy: 70.0912, loss_wh: 3.7239, loss: 161.7820, grad_norm: 782.0534
+2024-01-18 19:17:58,645 - mmdet - INFO - Epoch [10][200/738]	lr: 1.000e-03, eta: 2:19:02, time: 0.736, data_time: 0.004, memory: 6939, loss_cls: 13.7119, loss_conf: 74.6364, loss_xy: 73.1904, loss_wh: 3.7254, loss: 165.2641, grad_norm: 846.7334
+2024-01-18 19:18:36,897 - mmdet - INFO - Epoch [10][250/738]	lr: 1.000e-03, eta: 2:18:30, time: 0.765, data_time: 0.004, memory: 6939, loss_cls: 13.0119, loss_conf: 62.4775, loss_xy: 62.3822, loss_wh: 3.5675, loss: 141.4391, grad_norm: 680.6780
+2024-01-18 19:19:14,555 - mmdet - INFO - Epoch [10][300/738]	lr: 1.000e-03, eta: 2:17:57, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 12.6733, loss_conf: 70.7514, loss_xy: 66.4504, loss_wh: 4.4754, loss: 154.3505, grad_norm: 790.7747
+2024-01-18 19:19:51,463 - mmdet - INFO - Epoch [10][350/738]	lr: 1.000e-03, eta: 2:17:23, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 12.5529, loss_conf: 63.6937, loss_xy: 60.8845, loss_wh: 3.3068, loss: 140.4379, grad_norm: 716.9955
+2024-01-18 19:20:28,297 - mmdet - INFO - Epoch [10][400/738]	lr: 1.000e-03, eta: 2:16:48, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 16.4155, loss_conf: 71.0545, loss_xy: 66.7093, loss_wh: 4.2710, loss: 158.4503, grad_norm: 828.7414
+2024-01-18 19:21:03,826 - mmdet - INFO - Epoch [10][450/738]	lr: 1.000e-03, eta: 2:16:11, time: 0.711, data_time: 0.004, memory: 6939, loss_cls: 13.7467, loss_conf: 69.0706, loss_xy: 66.8260, loss_wh: 3.6632, loss: 153.3065, grad_norm: 767.5821
+2024-01-18 19:21:40,812 - mmdet - INFO - Epoch [10][500/738]	lr: 1.000e-03, eta: 2:15:37, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 13.6309, loss_conf: 69.8591, loss_xy: 66.9390, loss_wh: 3.3706, loss: 153.7996, grad_norm: 769.3326
+2024-01-18 19:22:18,509 - mmdet - INFO - Epoch [10][550/738]	lr: 1.000e-03, eta: 2:15:04, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 14.5303, loss_conf: 62.6835, loss_xy: 62.9940, loss_wh: 3.8924, loss: 144.1002, grad_norm: 767.5299
+2024-01-18 19:22:54,508 - mmdet - INFO - Epoch [10][600/738]	lr: 1.000e-03, eta: 2:14:28, time: 0.720, data_time: 0.004, memory: 6939, loss_cls: 15.2030, loss_conf: 64.5155, loss_xy: 61.0041, loss_wh: 3.7380, loss: 144.4605, grad_norm: 709.4367
+2024-01-18 19:23:32,598 - mmdet - INFO - Epoch [10][650/738]	lr: 1.000e-03, eta: 2:13:55, time: 0.762, data_time: 0.005, memory: 6939, loss_cls: 14.3451, loss_conf: 72.5180, loss_xy: 67.3432, loss_wh: 4.0264, loss: 158.2328, grad_norm: 800.2296
+2024-01-18 19:24:09,950 - mmdet - INFO - Epoch [10][700/738]	lr: 1.000e-03, eta: 2:13:21, time: 0.747, data_time: 0.004, memory: 6939, loss_cls: 14.6866, loss_conf: 67.3014, loss_xy: 63.7889, loss_wh: 3.5451, loss: 149.3220, grad_norm: 937.2948
+2024-01-18 19:24:37,983 - mmdet - INFO - Saving checkpoint at 10 epochs
+2024-01-18 19:25:28,240 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1412 | 0.887  | 0.751 |
+| Boat      | 289  | 2381 | 0.855  | 0.639 |
+| Bottle    | 282  | 2127 | 0.833  | 0.613 |
+| Bus       | 135  | 478  | 0.926  | 0.857 |
+| Car       | 597  | 3867 | 0.906  | 0.758 |
+| Cat       | 183  | 1476 | 0.858  | 0.545 |
+| Chair     | 466  | 4955 | 0.833  | 0.583 |
+| Cup       | 366  | 2144 | 0.880  | 0.681 |
+| Dog       | 207  | 1752 | 0.947  | 0.632 |
+| Motorbike | 233  | 1127 | 0.815  | 0.629 |
+| People    | 1562 | 9157 | 0.907  | 0.746 |
+| Table     | 333  | 3150 | 0.793  | 0.487 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.660 |
++-----------+------+------+--------+-------+
+2024-01-18 19:25:28,245 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:25:28,245 - mmdet - INFO - Epoch(val) [10][1467]	AP50: 0.6600, mAP: 0.6600
+2024-01-18 19:26:07,023 - mmdet - INFO - Epoch [11][50/738]	lr: 1.000e-03, eta: 2:11:41, time: 0.775, data_time: 0.049, memory: 6939, loss_cls: 12.1525, loss_conf: 63.0529, loss_xy: 65.6383, loss_wh: 3.5251, loss: 144.3689, grad_norm: 654.3848
+2024-01-18 19:26:44,662 - mmdet - INFO - Epoch [11][100/738]	lr: 1.000e-03, eta: 2:11:08, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 14.0300, loss_conf: 66.9197, loss_xy: 67.7117, loss_wh: 3.7727, loss: 152.4340, grad_norm: 738.2649
+2024-01-18 19:27:19,511 - mmdet - INFO - Epoch [11][150/738]	lr: 1.000e-03, eta: 2:10:31, time: 0.697, data_time: 0.004, memory: 6939, loss_cls: 15.5379, loss_conf: 69.3597, loss_xy: 67.2111, loss_wh: 4.1559, loss: 156.2647, grad_norm: 805.8390
+2024-01-18 19:27:57,733 - mmdet - INFO - Epoch [11][200/738]	lr: 1.000e-03, eta: 2:09:58, time: 0.764, data_time: 0.004, memory: 6939, loss_cls: 13.2870, loss_conf: 61.3322, loss_xy: 59.8927, loss_wh: 3.3016, loss: 137.8136, grad_norm: 761.7779
+2024-01-18 19:28:33,229 - mmdet - INFO - Epoch [11][250/738]	lr: 1.000e-03, eta: 2:09:22, time: 0.710, data_time: 0.004, memory: 6939, loss_cls: 15.5438, loss_conf: 65.8657, loss_xy: 64.6507, loss_wh: 3.8077, loss: 149.8679, grad_norm: 748.1516
+2024-01-18 19:29:11,408 - mmdet - INFO - Epoch [11][300/738]	lr: 1.000e-03, eta: 2:08:49, time: 0.764, data_time: 0.004, memory: 6939, loss_cls: 13.1724, loss_conf: 65.7434, loss_xy: 66.0765, loss_wh: 4.0331, loss: 149.0254, grad_norm: 789.3733
+2024-01-18 19:29:48,121 - mmdet - INFO - Epoch [11][350/738]	lr: 1.000e-03, eta: 2:08:14, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 14.1999, loss_conf: 67.3743, loss_xy: 66.9751, loss_wh: 3.8849, loss: 152.4342, grad_norm: 789.3011
+2024-01-18 19:30:24,586 - mmdet - INFO - Epoch [11][400/738]	lr: 1.000e-03, eta: 2:07:39, time: 0.729, data_time: 0.004, memory: 6939, loss_cls: 13.8431, loss_conf: 73.1169, loss_xy: 69.6819, loss_wh: 3.8224, loss: 160.4642, grad_norm: 809.2216
+2024-01-18 19:31:01,776 - mmdet - INFO - Epoch [11][450/738]	lr: 1.000e-03, eta: 2:07:05, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 15.2119, loss_conf: 64.4766, loss_xy: 65.6059, loss_wh: 3.8652, loss: 149.1596, grad_norm: 787.1530
+2024-01-18 19:31:38,769 - mmdet - INFO - Epoch [11][500/738]	lr: 1.000e-03, eta: 2:06:31, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 14.0210, loss_conf: 65.6029, loss_xy: 63.0690, loss_wh: 3.5599, loss: 146.2528, grad_norm: 776.5529
+2024-01-18 19:32:16,047 - mmdet - INFO - Epoch [11][550/738]	lr: 1.000e-03, eta: 2:05:57, time: 0.746, data_time: 0.005, memory: 6939, loss_cls: 11.6564, loss_conf: 58.8059, loss_xy: 58.5078, loss_wh: 3.3859, loss: 132.3560, grad_norm: 697.4739
+2024-01-18 19:32:53,881 - mmdet - INFO - Epoch [11][600/738]	lr: 1.000e-03, eta: 2:05:23, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 14.4113, loss_conf: 65.3663, loss_xy: 62.2801, loss_wh: 3.8820, loss: 145.9398, grad_norm: 743.7249
+2024-01-18 19:33:30,922 - mmdet - INFO - Epoch [11][650/738]	lr: 1.000e-03, eta: 2:04:49, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 12.7291, loss_conf: 66.0671, loss_xy: 64.5679, loss_wh: 3.2467, loss: 146.6109, grad_norm: 740.7932
+2024-01-18 19:34:08,406 - mmdet - INFO - Epoch [11][700/738]	lr: 1.000e-03, eta: 2:04:15, time: 0.750, data_time: 0.004, memory: 6939, loss_cls: 12.8404, loss_conf: 65.7834, loss_xy: 64.7559, loss_wh: 3.3169, loss: 146.6966, grad_norm: 728.9047
+2024-01-18 19:34:37,434 - mmdet - INFO - Saving checkpoint at 11 epochs
+2024-01-18 19:35:27,559 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1371 | 0.892  | 0.717 |
+| Boat      | 289  | 1886 | 0.855  | 0.638 |
+| Bottle    | 282  | 2603 | 0.780  | 0.408 |
+| Bus       | 135  | 786  | 0.963  | 0.852 |
+| Car       | 597  | 2043 | 0.903  | 0.788 |
+| Cat       | 183  | 1615 | 0.902  | 0.598 |
+| Chair     | 466  | 3498 | 0.845  | 0.622 |
+| Cup       | 366  | 1833 | 0.833  | 0.680 |
+| Dog       | 207  | 1495 | 0.942  | 0.659 |
+| Motorbike | 233  | 1059 | 0.790  | 0.582 |
+| People    | 1562 | 7161 | 0.886  | 0.742 |
+| Table     | 333  | 3032 | 0.775  | 0.480 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.647 |
++-----------+------+------+--------+-------+
+2024-01-18 19:35:27,564 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:35:27,564 - mmdet - INFO - Epoch(val) [11][1467]	AP50: 0.6470, mAP: 0.6472
+2024-01-18 19:36:07,859 - mmdet - INFO - Epoch [12][50/738]	lr: 1.000e-03, eta: 2:02:43, time: 0.806, data_time: 0.050, memory: 6939, loss_cls: 11.1011, loss_conf: 60.3543, loss_xy: 60.1781, loss_wh: 3.9066, loss: 135.5401, grad_norm: 715.3507
+2024-01-18 19:36:44,710 - mmdet - INFO - Epoch [12][100/738]	lr: 1.000e-03, eta: 2:02:08, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 11.6405, loss_conf: 70.1240, loss_xy: 67.8637, loss_wh: 3.8478, loss: 153.4760, grad_norm: 729.4426
+2024-01-18 19:37:22,988 - mmdet - INFO - Epoch [12][150/738]	lr: 1.000e-03, eta: 2:01:35, time: 0.766, data_time: 0.005, memory: 6939, loss_cls: 13.1886, loss_conf: 68.1800, loss_xy: 66.6155, loss_wh: 3.7630, loss: 151.7471, grad_norm: 773.1772
+2024-01-18 19:37:59,708 - mmdet - INFO - Epoch [12][200/738]	lr: 1.000e-03, eta: 2:01:00, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 12.4478, loss_conf: 67.0372, loss_xy: 65.7647, loss_wh: 4.0724, loss: 149.3221, grad_norm: 838.7230
+2024-01-18 19:38:36,874 - mmdet - INFO - Epoch [12][250/738]	lr: 1.000e-03, eta: 2:00:26, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 11.0264, loss_conf: 59.1161, loss_xy: 58.5950, loss_wh: 3.0826, loss: 131.8201, grad_norm: 671.2532
+2024-01-18 19:39:13,696 - mmdet - INFO - Epoch [12][300/738]	lr: 1.000e-03, eta: 1:59:52, time: 0.736, data_time: 0.004, memory: 6939, loss_cls: 10.9184, loss_conf: 60.0254, loss_xy: 59.9332, loss_wh: 3.3197, loss: 134.1968, grad_norm: 700.2860
+2024-01-18 19:39:51,372 - mmdet - INFO - Epoch [12][350/738]	lr: 1.000e-03, eta: 1:59:18, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 14.0187, loss_conf: 66.3698, loss_xy: 65.5286, loss_wh: 3.2647, loss: 149.1818, grad_norm: 743.6413
+2024-01-18 19:40:27,901 - mmdet - INFO - Epoch [12][400/738]	lr: 1.000e-03, eta: 1:58:43, time: 0.731, data_time: 0.004, memory: 6939, loss_cls: 10.9553, loss_conf: 62.1406, loss_xy: 64.6606, loss_wh: 3.7781, loss: 141.5345, grad_norm: 673.9550
+2024-01-18 19:41:05,578 - mmdet - INFO - Epoch [12][450/738]	lr: 1.000e-03, eta: 1:58:09, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 11.6329, loss_conf: 65.9690, loss_xy: 64.1171, loss_wh: 4.1829, loss: 145.9019, grad_norm: 695.9723
+2024-01-18 19:41:42,108 - mmdet - INFO - Epoch [12][500/738]	lr: 1.000e-03, eta: 1:57:34, time: 0.731, data_time: 0.004, memory: 6939, loss_cls: 13.2754, loss_conf: 62.8327, loss_xy: 63.9859, loss_wh: 3.6521, loss: 143.7461, grad_norm: 712.8931
+2024-01-18 19:42:18,954 - mmdet - INFO - Epoch [12][550/738]	lr: 1.000e-03, eta: 1:56:59, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 13.1738, loss_conf: 69.1344, loss_xy: 68.2312, loss_wh: 3.7554, loss: 154.2948, grad_norm: 762.5962
+2024-01-18 19:42:56,552 - mmdet - INFO - Epoch [12][600/738]	lr: 1.000e-03, eta: 1:56:25, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 14.0067, loss_conf: 65.9907, loss_xy: 61.0873, loss_wh: 3.3084, loss: 144.3931, grad_norm: 773.0938
+2024-01-18 19:43:33,410 - mmdet - INFO - Epoch [12][650/738]	lr: 1.000e-03, eta: 1:55:50, time: 0.737, data_time: 0.005, memory: 6939, loss_cls: 13.6304, loss_conf: 61.0615, loss_xy: 63.7340, loss_wh: 3.4964, loss: 141.9222, grad_norm: 805.6728
+2024-01-18 19:44:10,113 - mmdet - INFO - Epoch [12][700/738]	lr: 1.000e-03, eta: 1:55:15, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 14.6156, loss_conf: 69.5920, loss_xy: 67.2514, loss_wh: 3.8076, loss: 155.2666, grad_norm: 786.4979
+2024-01-18 19:44:38,849 - mmdet - INFO - Saving checkpoint at 12 epochs
+2024-01-18 19:45:28,956 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1089 | 0.877  | 0.730 |
+| Boat      | 289  | 2353 | 0.900  | 0.671 |
+| Bottle    | 282  | 2093 | 0.830  | 0.633 |
+| Bus       | 135  | 1075 | 0.970  | 0.868 |
+| Car       | 597  | 3558 | 0.908  | 0.787 |
+| Cat       | 183  | 1407 | 0.863  | 0.563 |
+| Chair     | 466  | 5064 | 0.854  | 0.614 |
+| Cup       | 366  | 2136 | 0.872  | 0.700 |
+| Dog       | 207  | 1352 | 0.937  | 0.702 |
+| Motorbike | 233  | 2153 | 0.871  | 0.602 |
+| People    | 1562 | 9219 | 0.916  | 0.763 |
+| Table     | 333  | 4565 | 0.823  | 0.458 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.674 |
++-----------+------+------+--------+-------+
+2024-01-18 19:45:28,961 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:45:28,961 - mmdet - INFO - Epoch(val) [12][1467]	AP50: 0.6740, mAP: 0.6742
+2024-01-18 19:46:07,426 - mmdet - INFO - Epoch [13][50/738]	lr: 1.000e-03, eta: 1:53:46, time: 0.769, data_time: 0.058, memory: 6939, loss_cls: 12.4718, loss_conf: 59.8197, loss_xy: 62.6493, loss_wh: 3.3594, loss: 138.3002, grad_norm: 751.1036
+2024-01-18 19:46:44,098 - mmdet - INFO - Epoch [13][100/738]	lr: 1.000e-03, eta: 1:53:11, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 15.0969, loss_conf: 66.2859, loss_xy: 69.3949, loss_wh: 3.9841, loss: 154.7618, grad_norm: 815.5464
+2024-01-18 19:47:20,845 - mmdet - INFO - Epoch [13][150/738]	lr: 1.000e-03, eta: 1:52:36, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 9.7986, loss_conf: 64.0125, loss_xy: 64.9149, loss_wh: 3.5066, loss: 142.2326, grad_norm: 750.2094
+2024-01-18 19:47:59,505 - mmdet - INFO - Epoch [13][200/738]	lr: 1.000e-03, eta: 1:52:03, time: 0.773, data_time: 0.004, memory: 6939, loss_cls: 11.8767, loss_conf: 61.0670, loss_xy: 60.7618, loss_wh: 3.7054, loss: 137.4109, grad_norm: 709.9805
+2024-01-18 19:48:37,260 - mmdet - INFO - Epoch [13][250/738]	lr: 1.000e-03, eta: 1:51:30, time: 0.755, data_time: 0.004, memory: 6939, loss_cls: 12.3178, loss_conf: 68.3735, loss_xy: 66.0037, loss_wh: 3.6816, loss: 150.3766, grad_norm: 709.4262
+2024-01-18 19:49:13,943 - mmdet - INFO - Epoch [13][300/738]	lr: 1.000e-03, eta: 1:50:55, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 13.8336, loss_conf: 69.4621, loss_xy: 67.9661, loss_wh: 3.3229, loss: 154.5847, grad_norm: 917.4727
+2024-01-18 19:49:51,250 - mmdet - INFO - Epoch [13][350/738]	lr: 1.000e-03, eta: 1:50:20, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 11.4689, loss_conf: 58.8816, loss_xy: 58.4647, loss_wh: 2.7250, loss: 131.5401, grad_norm: 732.2651
+2024-01-18 19:50:28,388 - mmdet - INFO - Epoch [13][400/738]	lr: 1.000e-03, eta: 1:49:46, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 10.4215, loss_conf: 65.7558, loss_xy: 65.4654, loss_wh: 3.1284, loss: 144.7710, grad_norm: 720.2595
+2024-01-18 19:51:05,081 - mmdet - INFO - Epoch [13][450/738]	lr: 1.000e-03, eta: 1:49:11, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 13.4010, loss_conf: 64.1653, loss_xy: 67.1263, loss_wh: 3.5557, loss: 148.2484, grad_norm: 770.7554
+2024-01-18 19:51:41,747 - mmdet - INFO - Epoch [13][500/738]	lr: 1.000e-03, eta: 1:48:36, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 10.4511, loss_conf: 60.2501, loss_xy: 62.7375, loss_wh: 3.2430, loss: 136.6817, grad_norm: 678.9715
+2024-01-18 19:52:19,433 - mmdet - INFO - Epoch [13][550/738]	lr: 1.000e-03, eta: 1:48:02, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 11.4045, loss_conf: 66.1203, loss_xy: 66.8981, loss_wh: 3.7248, loss: 148.1476, grad_norm: 767.6972
+2024-01-18 19:52:56,197 - mmdet - INFO - Epoch [13][600/738]	lr: 1.000e-03, eta: 1:47:27, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 12.2089, loss_conf: 64.8897, loss_xy: 64.1979, loss_wh: 3.2227, loss: 144.5192, grad_norm: 789.8657
+2024-01-18 19:53:33,163 - mmdet - INFO - Epoch [13][650/738]	lr: 1.000e-03, eta: 1:46:52, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 12.7661, loss_conf: 64.1110, loss_xy: 65.9491, loss_wh: 3.6323, loss: 146.4586, grad_norm: 780.4654
+2024-01-18 19:54:10,737 - mmdet - INFO - Epoch [13][700/738]	lr: 1.000e-03, eta: 1:46:18, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 14.2577, loss_conf: 62.2963, loss_xy: 63.7158, loss_wh: 3.4114, loss: 143.6813, grad_norm: 740.3923
+2024-01-18 19:54:39,746 - mmdet - INFO - Saving checkpoint at 13 epochs
+2024-01-18 19:55:29,956 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 929  | 0.844  | 0.691 |
+| Boat      | 289  | 3706 | 0.872  | 0.546 |
+| Bottle    | 282  | 2361 | 0.858  | 0.691 |
+| Bus       | 135  | 848  | 0.948  | 0.780 |
+| Car       | 597  | 3510 | 0.896  | 0.778 |
+| Cat       | 183  | 1658 | 0.880  | 0.589 |
+| Chair     | 466  | 4522 | 0.854  | 0.627 |
+| Cup       | 366  | 2128 | 0.869  | 0.660 |
+| Dog       | 207  | 1751 | 0.923  | 0.696 |
+| Motorbike | 233  | 2309 | 0.884  | 0.582 |
+| People    | 1562 | 8716 | 0.899  | 0.742 |
+| Table     | 333  | 3900 | 0.814  | 0.458 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.653 |
++-----------+------+------+--------+-------+
+2024-01-18 19:55:29,961 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 19:55:29,961 - mmdet - INFO - Epoch(val) [13][1467]	AP50: 0.6530, mAP: 0.6534
+2024-01-18 19:56:10,742 - mmdet - INFO - Epoch [14][50/738]	lr: 1.000e-03, eta: 1:44:54, time: 0.815, data_time: 0.052, memory: 6939, loss_cls: 11.8951, loss_conf: 60.8165, loss_xy: 64.2336, loss_wh: 3.5021, loss: 140.4473, grad_norm: 694.6726
+2024-01-18 19:56:47,842 - mmdet - INFO - Epoch [14][100/738]	lr: 1.000e-03, eta: 1:44:20, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 10.2868, loss_conf: 55.6946, loss_xy: 59.3176, loss_wh: 3.3270, loss: 128.6260, grad_norm: 699.4797
+2024-01-18 19:57:25,539 - mmdet - INFO - Epoch [14][150/738]	lr: 1.000e-03, eta: 1:43:46, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 11.6655, loss_conf: 59.3550, loss_xy: 61.9529, loss_wh: 3.3833, loss: 136.3567, grad_norm: 756.7407
+2024-01-18 19:58:02,452 - mmdet - INFO - Epoch [14][200/738]	lr: 1.000e-03, eta: 1:43:11, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 13.2541, loss_conf: 67.4844, loss_xy: 68.4609, loss_wh: 3.8715, loss: 153.0709, grad_norm: 744.7194
+2024-01-18 19:58:39,367 - mmdet - INFO - Epoch [14][250/738]	lr: 1.000e-03, eta: 1:42:36, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 11.6722, loss_conf: 63.7325, loss_xy: 68.1258, loss_wh: 3.6400, loss: 147.1705, grad_norm: 735.2000
+2024-01-18 19:59:16,397 - mmdet - INFO - Epoch [14][300/738]	lr: 1.000e-03, eta: 1:42:02, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 9.4324, loss_conf: 58.4497, loss_xy: 59.8415, loss_wh: 4.2190, loss: 131.9426, grad_norm: 680.8942
+2024-01-18 19:59:53,670 - mmdet - INFO - Epoch [14][350/738]	lr: 1.000e-03, eta: 1:41:27, time: 0.745, data_time: 0.004, memory: 6939, loss_cls: 11.5482, loss_conf: 61.5261, loss_xy: 63.9037, loss_wh: 3.8220, loss: 140.7999, grad_norm: 736.7255
+2024-01-18 20:00:30,425 - mmdet - INFO - Epoch [14][400/738]	lr: 1.000e-03, eta: 1:40:52, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 10.7960, loss_conf: 56.4474, loss_xy: 59.4934, loss_wh: 3.4322, loss: 130.1690, grad_norm: 709.5458
+2024-01-18 20:01:07,393 - mmdet - INFO - Epoch [14][450/738]	lr: 1.000e-03, eta: 1:40:17, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 12.6897, loss_conf: 68.3018, loss_xy: 70.3119, loss_wh: 3.6114, loss: 154.9149, grad_norm: 743.3831
+2024-01-18 20:01:43,759 - mmdet - INFO - Epoch [14][500/738]	lr: 1.000e-03, eta: 1:39:42, time: 0.727, data_time: 0.004, memory: 6939, loss_cls: 9.2827, loss_conf: 61.4806, loss_xy: 63.3123, loss_wh: 3.1593, loss: 137.2350, grad_norm: 712.0494
+2024-01-18 20:02:20,452 - mmdet - INFO - Epoch [14][550/738]	lr: 1.000e-03, eta: 1:39:07, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 12.9079, loss_conf: 64.2271, loss_xy: 66.0463, loss_wh: 3.4258, loss: 146.6071, grad_norm: 743.4107
+2024-01-18 20:02:57,722 - mmdet - INFO - Epoch [14][600/738]	lr: 1.000e-03, eta: 1:38:32, time: 0.745, data_time: 0.004, memory: 6939, loss_cls: 14.3138, loss_conf: 65.7775, loss_xy: 62.7817, loss_wh: 3.0083, loss: 145.8814, grad_norm: 759.7620
+2024-01-18 20:03:35,399 - mmdet - INFO - Epoch [14][650/738]	lr: 1.000e-03, eta: 1:37:58, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 12.6910, loss_conf: 68.0758, loss_xy: 69.2198, loss_wh: 3.5305, loss: 153.5171, grad_norm: 762.0851
+2024-01-18 20:04:13,014 - mmdet - INFO - Epoch [14][700/738]	lr: 1.000e-03, eta: 1:37:24, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 12.0098, loss_conf: 65.0657, loss_xy: 70.1317, loss_wh: 4.0442, loss: 151.2514, grad_norm: 714.7887
+2024-01-18 20:04:40,792 - mmdet - INFO - Saving checkpoint at 14 epochs
+2024-01-18 20:05:30,952 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1435 | 0.925  | 0.772 |
+| Boat      | 289  | 1759 | 0.865  | 0.696 |
+| Bottle    | 282  | 1133 | 0.773  | 0.621 |
+| Bus       | 135  | 725  | 0.963  | 0.857 |
+| Car       | 597  | 3071 | 0.920  | 0.805 |
+| Cat       | 183  | 1347 | 0.858  | 0.633 |
+| Chair     | 466  | 4275 | 0.830  | 0.602 |
+| Cup       | 366  | 1313 | 0.811  | 0.675 |
+| Dog       | 207  | 1799 | 0.937  | 0.718 |
+| Motorbike | 233  | 2209 | 0.867  | 0.649 |
+| People    | 1562 | 8568 | 0.898  | 0.745 |
+| Table     | 333  | 3246 | 0.772  | 0.450 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.685 |
++-----------+------+------+--------+-------+
+2024-01-18 20:05:30,956 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:05:30,957 - mmdet - INFO - Epoch(val) [14][1467]	AP50: 0.6850, mAP: 0.6853
+2024-01-18 20:06:10,480 - mmdet - INFO - Epoch [15][50/738]	lr: 1.000e-03, eta: 1:36:02, time: 0.790, data_time: 0.049, memory: 6939, loss_cls: 9.9273, loss_conf: 59.2380, loss_xy: 60.8361, loss_wh: 3.2533, loss: 133.2546, grad_norm: 760.3320
+2024-01-18 20:06:47,187 - mmdet - INFO - Epoch [15][100/738]	lr: 1.000e-03, eta: 1:35:27, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 9.2557, loss_conf: 61.5793, loss_xy: 62.5775, loss_wh: 3.2153, loss: 136.6278, grad_norm: 696.9617
+2024-01-18 20:07:25,251 - mmdet - INFO - Epoch [15][150/738]	lr: 1.000e-03, eta: 1:34:53, time: 0.761, data_time: 0.004, memory: 6939, loss_cls: 12.7904, loss_conf: 69.1154, loss_xy: 71.3065, loss_wh: 4.3743, loss: 157.5866, grad_norm: 745.3725
+2024-01-18 20:08:01,808 - mmdet - INFO - Epoch [15][200/738]	lr: 1.000e-03, eta: 1:34:18, time: 0.731, data_time: 0.004, memory: 6939, loss_cls: 9.8898, loss_conf: 60.2207, loss_xy: 64.8375, loss_wh: 3.9613, loss: 138.9093, grad_norm: 730.2260
+2024-01-18 20:08:39,632 - mmdet - INFO - Epoch [15][250/738]	lr: 1.000e-03, eta: 1:33:44, time: 0.756, data_time: 0.004, memory: 6939, loss_cls: 10.7650, loss_conf: 63.4695, loss_xy: 64.7657, loss_wh: 3.2741, loss: 142.2743, grad_norm: 740.2161
+2024-01-18 20:09:17,793 - mmdet - INFO - Epoch [15][300/738]	lr: 1.000e-03, eta: 1:33:10, time: 0.763, data_time: 0.005, memory: 6939, loss_cls: 14.6034, loss_conf: 54.1877, loss_xy: 55.4426, loss_wh: 4.0936, loss: 128.3273, grad_norm: 706.0788
+2024-01-18 20:09:55,576 - mmdet - INFO - Epoch [15][350/738]	lr: 1.000e-03, eta: 1:32:36, time: 0.756, data_time: 0.004, memory: 6939, loss_cls: 14.0347, loss_conf: 62.5976, loss_xy: 63.5100, loss_wh: 3.5368, loss: 143.6791, grad_norm: 708.1763
+2024-01-18 20:10:33,924 - mmdet - INFO - Epoch [15][400/738]	lr: 1.000e-03, eta: 1:32:02, time: 0.767, data_time: 0.004, memory: 6939, loss_cls: 11.5934, loss_conf: 62.7424, loss_xy: 66.1521, loss_wh: 3.3791, loss: 143.8669, grad_norm: 716.0190
+2024-01-18 20:11:09,703 - mmdet - INFO - Epoch [15][450/738]	lr: 1.000e-03, eta: 1:31:26, time: 0.716, data_time: 0.004, memory: 6939, loss_cls: 8.4011, loss_conf: 54.8538, loss_xy: 58.3791, loss_wh: 3.1442, loss: 124.7782, grad_norm: 719.8791
+2024-01-18 20:11:46,193 - mmdet - INFO - Epoch [15][500/738]	lr: 1.000e-03, eta: 1:30:51, time: 0.730, data_time: 0.004, memory: 6939, loss_cls: 12.5686, loss_conf: 70.3332, loss_xy: 72.3819, loss_wh: 4.1747, loss: 159.4585, grad_norm: 737.5606
+2024-01-18 20:12:23,481 - mmdet - INFO - Epoch [15][550/738]	lr: 1.000e-03, eta: 1:30:16, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 12.4686, loss_conf: 63.6654, loss_xy: 65.2674, loss_wh: 3.3744, loss: 144.7757, grad_norm: 765.8605
+2024-01-18 20:12:58,831 - mmdet - INFO - Epoch [15][600/738]	lr: 1.000e-03, eta: 1:29:40, time: 0.707, data_time: 0.004, memory: 6939, loss_cls: 15.0653, loss_conf: 67.7135, loss_xy: 66.6913, loss_wh: 3.1568, loss: 152.6269, grad_norm: 802.4435
+2024-01-18 20:13:35,182 - mmdet - INFO - Epoch [15][650/738]	lr: 1.000e-03, eta: 1:29:05, time: 0.727, data_time: 0.004, memory: 6939, loss_cls: 12.4051, loss_conf: 66.9208, loss_xy: 63.4123, loss_wh: 3.3406, loss: 146.0788, grad_norm: 760.0556
+2024-01-18 20:14:12,198 - mmdet - INFO - Epoch [15][700/738]	lr: 1.000e-03, eta: 1:28:30, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 10.7546, loss_conf: 69.0664, loss_xy: 67.3356, loss_wh: 3.6689, loss: 150.8255, grad_norm: 728.0871
+2024-01-18 20:14:40,847 - mmdet - INFO - Saving checkpoint at 15 epochs
+2024-01-18 20:15:31,963 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1872 | 0.910  | 0.719 |
+| Boat      | 289  | 1926 | 0.827  | 0.470 |
+| Bottle    | 282  | 2685 | 0.869  | 0.715 |
+| Bus       | 135  | 1086 | 0.970  | 0.807 |
+| Car       | 597  | 3524 | 0.928  | 0.775 |
+| Cat       | 183  | 866  | 0.798  | 0.584 |
+| Chair     | 466  | 4041 | 0.828  | 0.630 |
+| Cup       | 366  | 3025 | 0.923  | 0.754 |
+| Dog       | 207  | 1004 | 0.884  | 0.693 |
+| Motorbike | 233  | 2369 | 0.893  | 0.626 |
+| People    | 1562 | 9627 | 0.918  | 0.749 |
+| Table     | 333  | 3340 | 0.757  | 0.466 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.666 |
++-----------+------+------+--------+-------+
+2024-01-18 20:15:31,967 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:15:31,968 - mmdet - INFO - Epoch(val) [15][1467]	AP50: 0.6660, mAP: 0.6656
+2024-01-18 20:16:10,853 - mmdet - INFO - Epoch [16][50/738]	lr: 1.000e-03, eta: 1:27:11, time: 0.777, data_time: 0.051, memory: 6939, loss_cls: 9.3710, loss_conf: 53.4533, loss_xy: 58.3636, loss_wh: 3.0081, loss: 124.1959, grad_norm: 695.7775
+2024-01-18 20:16:47,916 - mmdet - INFO - Epoch [16][100/738]	lr: 1.000e-03, eta: 1:26:36, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 10.8363, loss_conf: 62.6363, loss_xy: 65.1858, loss_wh: 3.7113, loss: 142.3696, grad_norm: 688.6833
+2024-01-18 20:17:24,189 - mmdet - INFO - Epoch [16][150/738]	lr: 1.000e-03, eta: 1:26:01, time: 0.725, data_time: 0.004, memory: 6939, loss_cls: 13.2529, loss_conf: 64.9435, loss_xy: 64.0037, loss_wh: 3.4373, loss: 145.6373, grad_norm: 738.3311
+2024-01-18 20:18:01,688 - mmdet - INFO - Epoch [16][200/738]	lr: 1.000e-03, eta: 1:25:26, time: 0.750, data_time: 0.004, memory: 6939, loss_cls: 11.4812, loss_conf: 65.3227, loss_xy: 66.7821, loss_wh: 3.7202, loss: 147.3062, grad_norm: 703.1056
+2024-01-18 20:18:38,300 - mmdet - INFO - Epoch [16][250/738]	lr: 1.000e-03, eta: 1:24:51, time: 0.732, data_time: 0.004, memory: 6939, loss_cls: 10.9113, loss_conf: 61.1790, loss_xy: 63.3611, loss_wh: 3.6380, loss: 139.0895, grad_norm: 715.1081
+2024-01-18 20:19:15,568 - mmdet - INFO - Epoch [16][300/738]	lr: 1.000e-03, eta: 1:24:16, time: 0.745, data_time: 0.004, memory: 6939, loss_cls: 12.0740, loss_conf: 60.6543, loss_xy: 64.7504, loss_wh: 3.0380, loss: 140.5168, grad_norm: 743.8339
+2024-01-18 20:19:52,582 - mmdet - INFO - Epoch [16][350/738]	lr: 1.000e-03, eta: 1:23:41, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 10.6317, loss_conf: 61.0578, loss_xy: 62.5296, loss_wh: 3.1682, loss: 137.3873, grad_norm: 675.8030
+2024-01-18 20:20:30,696 - mmdet - INFO - Epoch [16][400/738]	lr: 1.000e-03, eta: 1:23:07, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 12.4158, loss_conf: 62.7803, loss_xy: 64.9209, loss_wh: 3.4166, loss: 143.5336, grad_norm: 700.9064
+2024-01-18 20:21:06,754 - mmdet - INFO - Epoch [16][450/738]	lr: 1.000e-03, eta: 1:22:32, time: 0.721, data_time: 0.004, memory: 6939, loss_cls: 11.2337, loss_conf: 70.1060, loss_xy: 71.5668, loss_wh: 3.4322, loss: 156.3387, grad_norm: 727.9219
+2024-01-18 20:21:45,754 - mmdet - INFO - Epoch [16][500/738]	lr: 1.000e-03, eta: 1:21:58, time: 0.780, data_time: 0.004, memory: 6939, loss_cls: 9.2256, loss_conf: 60.2037, loss_xy: 64.2378, loss_wh: 2.9123, loss: 136.5794, grad_norm: 716.2490
+2024-01-18 20:22:22,977 - mmdet - INFO - Epoch [16][550/738]	lr: 1.000e-03, eta: 1:21:23, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 12.6151, loss_conf: 57.1291, loss_xy: 59.3952, loss_wh: 3.1030, loss: 132.2424, grad_norm: 720.4316
+2024-01-18 20:23:00,693 - mmdet - INFO - Epoch [16][600/738]	lr: 1.000e-03, eta: 1:20:48, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 11.6707, loss_conf: 56.2453, loss_xy: 60.2543, loss_wh: 3.1778, loss: 131.3481, grad_norm: 672.7971
+2024-01-18 20:23:37,456 - mmdet - INFO - Epoch [16][650/738]	lr: 1.000e-03, eta: 1:20:13, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 11.2939, loss_conf: 63.2266, loss_xy: 61.6293, loss_wh: 3.1647, loss: 139.3145, grad_norm: 746.9373
+2024-01-18 20:24:15,571 - mmdet - INFO - Epoch [16][700/738]	lr: 1.000e-03, eta: 1:19:39, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 13.8275, loss_conf: 63.4725, loss_xy: 65.5838, loss_wh: 3.2621, loss: 146.1460, grad_norm: 741.1512
+2024-01-18 20:24:44,556 - mmdet - INFO - Saving checkpoint at 16 epochs
+2024-01-18 20:25:34,986 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 788  | 0.840  | 0.727 |
+| Boat      | 289  | 1518 | 0.813  | 0.615 |
+| Bottle    | 282  | 2221 | 0.830  | 0.645 |
+| Bus       | 135  | 793  | 0.978  | 0.869 |
+| Car       | 597  | 3165 | 0.911  | 0.807 |
+| Cat       | 183  | 891  | 0.820  | 0.611 |
+| Chair     | 466  | 3879 | 0.818  | 0.599 |
+| Cup       | 366  | 1793 | 0.811  | 0.661 |
+| Dog       | 207  | 1005 | 0.894  | 0.697 |
+| Motorbike | 233  | 2019 | 0.863  | 0.628 |
+| People    | 1562 | 7974 | 0.889  | 0.680 |
+| Table     | 333  | 3446 | 0.799  | 0.437 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.665 |
++-----------+------+------+--------+-------+
+2024-01-18 20:25:34,990 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:25:34,991 - mmdet - INFO - Epoch(val) [16][1467]	AP50: 0.6650, mAP: 0.6648
+2024-01-18 20:26:13,138 - mmdet - INFO - Epoch [17][50/738]	lr: 1.000e-03, eta: 1:18:22, time: 0.763, data_time: 0.049, memory: 6939, loss_cls: 11.4747, loss_conf: 64.0895, loss_xy: 69.7667, loss_wh: 3.8048, loss: 149.1356, grad_norm: 704.1210
+2024-01-18 20:26:49,143 - mmdet - INFO - Epoch [17][100/738]	lr: 1.000e-03, eta: 1:17:47, time: 0.720, data_time: 0.004, memory: 6939, loss_cls: 8.6750, loss_conf: 59.2119, loss_xy: 64.8655, loss_wh: 3.8906, loss: 136.6430, grad_norm: 674.7454
+2024-01-18 20:27:26,783 - mmdet - INFO - Epoch [17][150/738]	lr: 1.000e-03, eta: 1:17:12, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 11.4231, loss_conf: 58.9075, loss_xy: 62.0658, loss_wh: 3.6738, loss: 136.0703, grad_norm: 712.2512
+2024-01-18 20:28:02,003 - mmdet - INFO - Epoch [17][200/738]	lr: 1.000e-03, eta: 1:16:36, time: 0.704, data_time: 0.004, memory: 6939, loss_cls: 10.9102, loss_conf: 61.9926, loss_xy: 64.8681, loss_wh: 3.2143, loss: 140.9853, grad_norm: 727.9944
+2024-01-18 20:28:38,184 - mmdet - INFO - Epoch [17][250/738]	lr: 1.000e-03, eta: 1:16:01, time: 0.724, data_time: 0.004, memory: 6939, loss_cls: 10.7080, loss_conf: 60.5024, loss_xy: 64.6489, loss_wh: 3.5120, loss: 139.3713, grad_norm: 682.3303
+2024-01-18 20:29:15,269 - mmdet - INFO - Epoch [17][300/738]	lr: 1.000e-03, eta: 1:15:26, time: 0.742, data_time: 0.004, memory: 6939, loss_cls: 9.7235, loss_conf: 56.4925, loss_xy: 61.0334, loss_wh: 3.7648, loss: 131.0141, grad_norm: 711.2282
+2024-01-18 20:29:51,850 - mmdet - INFO - Epoch [17][350/738]	lr: 1.000e-03, eta: 1:14:50, time: 0.732, data_time: 0.004, memory: 6939, loss_cls: 11.2748, loss_conf: 71.1283, loss_xy: 70.4636, loss_wh: 3.6961, loss: 156.5628, grad_norm: 751.3248
+2024-01-18 20:30:29,239 - mmdet - INFO - Epoch [17][400/738]	lr: 1.000e-03, eta: 1:14:16, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 10.7379, loss_conf: 61.0658, loss_xy: 64.8011, loss_wh: 3.1531, loss: 139.7579, grad_norm: 729.6550
+2024-01-18 20:31:06,312 - mmdet - INFO - Epoch [17][450/738]	lr: 1.000e-03, eta: 1:13:41, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 11.1123, loss_conf: 59.0597, loss_xy: 62.7266, loss_wh: 2.9442, loss: 135.8428, grad_norm: 670.9528
+2024-01-18 20:31:43,968 - mmdet - INFO - Epoch [17][500/738]	lr: 1.000e-03, eta: 1:13:06, time: 0.753, data_time: 0.004, memory: 6939, loss_cls: 11.3354, loss_conf: 59.4794, loss_xy: 63.7194, loss_wh: 2.9988, loss: 137.5331, grad_norm: 766.0080
+2024-01-18 20:32:20,830 - mmdet - INFO - Epoch [17][550/738]	lr: 1.000e-03, eta: 1:12:31, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 10.0555, loss_conf: 59.2595, loss_xy: 60.2477, loss_wh: 2.6966, loss: 132.2593, grad_norm: 699.9731
+2024-01-18 20:32:58,370 - mmdet - INFO - Epoch [17][600/738]	lr: 1.000e-03, eta: 1:11:56, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 10.6660, loss_conf: 53.7414, loss_xy: 58.6665, loss_wh: 2.8574, loss: 125.9314, grad_norm: 661.5877
+2024-01-18 20:33:35,308 - mmdet - INFO - Epoch [17][650/738]	lr: 1.000e-03, eta: 1:11:21, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 11.3479, loss_conf: 65.8746, loss_xy: 65.4673, loss_wh: 3.1260, loss: 145.8158, grad_norm: 812.1476
+2024-01-18 20:34:11,755 - mmdet - INFO - Epoch [17][700/738]	lr: 1.000e-03, eta: 1:10:45, time: 0.729, data_time: 0.004, memory: 6939, loss_cls: 9.6046, loss_conf: 59.4865, loss_xy: 62.1421, loss_wh: 3.0154, loss: 134.2486, grad_norm: 705.7963
+2024-01-18 20:34:39,393 - mmdet - INFO - Saving checkpoint at 17 epochs
+2024-01-18 20:35:29,521 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1966 | 0.934  | 0.725 |
+| Boat      | 289  | 2405 | 0.851  | 0.636 |
+| Bottle    | 282  | 2051 | 0.833  | 0.641 |
+| Bus       | 135  | 633  | 0.948  | 0.860 |
+| Car       | 597  | 2687 | 0.908  | 0.791 |
+| Cat       | 183  | 854  | 0.831  | 0.607 |
+| Chair     | 466  | 6241 | 0.865  | 0.600 |
+| Cup       | 366  | 2262 | 0.883  | 0.721 |
+| Dog       | 207  | 1132 | 0.908  | 0.671 |
+| Motorbike | 233  | 1484 | 0.888  | 0.741 |
+| People    | 1562 | 7294 | 0.896  | 0.769 |
+| Table     | 333  | 4901 | 0.850  | 0.490 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.688 |
++-----------+------+------+--------+-------+
+2024-01-18 20:35:29,525 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:35:29,526 - mmdet - INFO - Epoch(val) [17][1467]	AP50: 0.6880, mAP: 0.6876
+2024-01-18 20:36:08,070 - mmdet - INFO - Epoch [18][50/738]	lr: 1.000e-03, eta: 1:09:31, time: 0.771, data_time: 0.049, memory: 6939, loss_cls: 10.1987, loss_conf: 64.6950, loss_xy: 69.1118, loss_wh: 3.3079, loss: 147.3134, grad_norm: 697.5897
+2024-01-18 20:36:44,824 - mmdet - INFO - Epoch [18][100/738]	lr: 1.000e-03, eta: 1:08:56, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 9.4434, loss_conf: 55.1100, loss_xy: 59.0865, loss_wh: 2.9497, loss: 126.5896, grad_norm: 639.1826
+2024-01-18 20:37:21,842 - mmdet - INFO - Epoch [18][150/738]	lr: 1.000e-03, eta: 1:08:21, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 9.7351, loss_conf: 55.4596, loss_xy: 61.3994, loss_wh: 2.9189, loss: 129.5129, grad_norm: 697.0435
+2024-01-18 20:37:57,416 - mmdet - INFO - Epoch [18][200/738]	lr: 1.000e-03, eta: 1:07:45, time: 0.711, data_time: 0.004, memory: 6939, loss_cls: 8.5478, loss_conf: 52.8684, loss_xy: 60.4219, loss_wh: 2.8800, loss: 124.7181, grad_norm: 691.3666
+2024-01-18 20:38:35,001 - mmdet - INFO - Epoch [18][250/738]	lr: 1.000e-03, eta: 1:07:11, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 12.9567, loss_conf: 57.9280, loss_xy: 64.1333, loss_wh: 3.2436, loss: 138.2615, grad_norm: 737.5074
+2024-01-18 20:39:12,821 - mmdet - INFO - Epoch [18][300/738]	lr: 1.000e-03, eta: 1:06:36, time: 0.756, data_time: 0.004, memory: 6939, loss_cls: 11.4848, loss_conf: 57.6959, loss_xy: 62.3796, loss_wh: 4.0272, loss: 135.5875, grad_norm: 692.5965
+2024-01-18 20:39:49,666 - mmdet - INFO - Epoch [18][350/738]	lr: 1.000e-03, eta: 1:06:01, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 10.5752, loss_conf: 61.8575, loss_xy: 61.9615, loss_wh: 3.4610, loss: 137.8552, grad_norm: 734.5886
+2024-01-18 20:40:27,851 - mmdet - INFO - Epoch [18][400/738]	lr: 1.000e-03, eta: 1:05:26, time: 0.764, data_time: 0.005, memory: 6939, loss_cls: 10.7163, loss_conf: 61.5500, loss_xy: 67.1458, loss_wh: 3.5826, loss: 142.9946, grad_norm: 673.3037
+2024-01-18 20:41:05,135 - mmdet - INFO - Epoch [18][450/738]	lr: 1.000e-03, eta: 1:04:51, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 9.0588, loss_conf: 56.5923, loss_xy: 63.8304, loss_wh: 3.2585, loss: 132.7400, grad_norm: 689.8605
+2024-01-18 20:41:43,368 - mmdet - INFO - Epoch [18][500/738]	lr: 1.000e-03, eta: 1:04:17, time: 0.765, data_time: 0.004, memory: 6939, loss_cls: 10.2303, loss_conf: 61.8615, loss_xy: 66.1289, loss_wh: 3.4414, loss: 141.6621, grad_norm: 689.7645
+2024-01-18 20:42:20,425 - mmdet - INFO - Epoch [18][550/738]	lr: 1.000e-03, eta: 1:03:41, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 9.6528, loss_conf: 62.3391, loss_xy: 66.9278, loss_wh: 3.6634, loss: 142.5831, grad_norm: 691.5329
+2024-01-18 20:42:56,577 - mmdet - INFO - Epoch [18][600/738]	lr: 1.000e-03, eta: 1:03:06, time: 0.723, data_time: 0.004, memory: 6939, loss_cls: 9.3564, loss_conf: 63.3751, loss_xy: 63.6557, loss_wh: 3.3017, loss: 139.6889, grad_norm: 684.4923
+2024-01-18 20:43:34,011 - mmdet - INFO - Epoch [18][650/738]	lr: 1.000e-03, eta: 1:02:31, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 9.5906, loss_conf: 50.8754, loss_xy: 55.9754, loss_wh: 2.7483, loss: 119.1898, grad_norm: 659.9432
+2024-01-18 20:44:11,899 - mmdet - INFO - Epoch [18][700/738]	lr: 1.000e-03, eta: 1:01:56, time: 0.758, data_time: 0.004, memory: 6939, loss_cls: 12.0722, loss_conf: 65.0642, loss_xy: 68.0325, loss_wh: 3.5876, loss: 148.7565, grad_norm: 717.3832
+2024-01-18 20:44:39,419 - mmdet - INFO - Saving checkpoint at 18 epochs
+2024-01-18 20:45:29,552 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 1744 | 0.873  | 0.705 |
+| Boat      | 289  | 1621 | 0.879  | 0.688 |
+| Bottle    | 282  | 3101 | 0.908  | 0.691 |
+| Bus       | 135  | 926  | 0.963  | 0.849 |
+| Car       | 597  | 3024 | 0.898  | 0.756 |
+| Cat       | 183  | 1034 | 0.880  | 0.675 |
+| Chair     | 466  | 4093 | 0.843  | 0.619 |
+| Cup       | 366  | 2942 | 0.891  | 0.735 |
+| Dog       | 207  | 1153 | 0.899  | 0.695 |
+| Motorbike | 233  | 1587 | 0.845  | 0.672 |
+| People    | 1562 | 7789 | 0.875  | 0.715 |
+| Table     | 333  | 3734 | 0.790  | 0.461 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.688 |
++-----------+------+------+--------+-------+
+2024-01-18 20:45:29,556 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:45:29,557 - mmdet - INFO - Epoch(val) [18][1467]	AP50: 0.6880, mAP: 0.6883
+2024-01-18 20:46:07,453 - mmdet - INFO - Epoch [19][50/738]	lr: 1.000e-04, eta: 1:00:44, time: 0.758, data_time: 0.051, memory: 6939, loss_cls: 9.2429, loss_conf: 54.7944, loss_xy: 63.6948, loss_wh: 2.8152, loss: 130.5472, grad_norm: 658.1276
+2024-01-18 20:46:45,455 - mmdet - INFO - Epoch [19][100/738]	lr: 1.000e-04, eta: 1:00:09, time: 0.760, data_time: 0.005, memory: 6939, loss_cls: 8.8896, loss_conf: 58.7496, loss_xy: 66.6076, loss_wh: 2.4875, loss: 136.7343, grad_norm: 624.9221
+2024-01-18 20:47:22,807 - mmdet - INFO - Epoch [19][150/738]	lr: 1.000e-04, eta: 0:59:34, time: 0.747, data_time: 0.004, memory: 6939, loss_cls: 5.5447, loss_conf: 46.5156, loss_xy: 60.6351, loss_wh: 1.7824, loss: 114.4777, grad_norm: 521.2278
+2024-01-18 20:48:01,456 - mmdet - INFO - Epoch [19][200/738]	lr: 1.000e-04, eta: 0:58:59, time: 0.773, data_time: 0.005, memory: 6939, loss_cls: 7.8809, loss_conf: 57.3793, loss_xy: 66.7400, loss_wh: 2.5465, loss: 134.5466, grad_norm: 572.5767
+2024-01-18 20:48:37,288 - mmdet - INFO - Epoch [19][250/738]	lr: 1.000e-04, eta: 0:58:24, time: 0.717, data_time: 0.004, memory: 6939, loss_cls: 5.5357, loss_conf: 46.0682, loss_xy: 59.6922, loss_wh: 1.9871, loss: 113.2833, grad_norm: 544.0519
+2024-01-18 20:49:14,350 - mmdet - INFO - Epoch [19][300/738]	lr: 1.000e-04, eta: 0:57:49, time: 0.741, data_time: 0.004, memory: 6939, loss_cls: 6.1369, loss_conf: 51.4228, loss_xy: 64.9954, loss_wh: 2.1654, loss: 124.7205, grad_norm: 569.0507
+2024-01-18 20:49:50,739 - mmdet - INFO - Epoch [19][350/738]	lr: 1.000e-04, eta: 0:57:13, time: 0.728, data_time: 0.004, memory: 6939, loss_cls: 9.2038, loss_conf: 53.8151, loss_xy: 65.9441, loss_wh: 1.9954, loss: 130.9583, grad_norm: 612.9447
+2024-01-18 20:50:26,311 - mmdet - INFO - Epoch [19][400/738]	lr: 1.000e-04, eta: 0:56:38, time: 0.711, data_time: 0.004, memory: 6939, loss_cls: 5.7915, loss_conf: 48.3864, loss_xy: 59.2592, loss_wh: 1.7033, loss: 115.1405, grad_norm: 528.8661
+2024-01-18 20:51:03,172 - mmdet - INFO - Epoch [19][450/738]	lr: 1.000e-04, eta: 0:56:02, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 6.3984, loss_conf: 45.0834, loss_xy: 57.5843, loss_wh: 1.6026, loss: 110.6687, grad_norm: 532.5772
+2024-01-18 20:51:39,064 - mmdet - INFO - Epoch [19][500/738]	lr: 1.000e-04, eta: 0:55:27, time: 0.718, data_time: 0.004, memory: 6939, loss_cls: 6.4958, loss_conf: 52.8680, loss_xy: 67.5165, loss_wh: 1.9521, loss: 128.8324, grad_norm: 598.8782
+2024-01-18 20:52:16,454 - mmdet - INFO - Epoch [19][550/738]	lr: 1.000e-04, eta: 0:54:52, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 7.0071, loss_conf: 50.0266, loss_xy: 64.0521, loss_wh: 1.8893, loss: 122.9751, grad_norm: 553.4109
+2024-01-18 20:52:52,762 - mmdet - INFO - Epoch [19][600/738]	lr: 1.000e-04, eta: 0:54:16, time: 0.726, data_time: 0.004, memory: 6939, loss_cls: 7.5877, loss_conf: 49.2465, loss_xy: 58.4375, loss_wh: 1.8620, loss: 117.1336, grad_norm: 567.4413
+2024-01-18 20:53:28,887 - mmdet - INFO - Epoch [19][650/738]	lr: 1.000e-04, eta: 0:53:41, time: 0.722, data_time: 0.004, memory: 6939, loss_cls: 7.4909, loss_conf: 52.5209, loss_xy: 64.3552, loss_wh: 2.0504, loss: 126.4174, grad_norm: 613.2236
+2024-01-18 20:54:06,191 - mmdet - INFO - Epoch [19][700/738]	lr: 1.000e-04, eta: 0:53:06, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 4.5513, loss_conf: 42.9093, loss_xy: 58.1251, loss_wh: 1.6447, loss: 107.2304, grad_norm: 522.8573
+2024-01-18 20:54:34,079 - mmdet - INFO - Saving checkpoint at 19 epochs
+2024-01-18 20:55:24,295 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 942  | 0.910  | 0.805 |
+| Boat      | 289  | 1185 | 0.893  | 0.770 |
+| Bottle    | 282  | 1646 | 0.901  | 0.767 |
+| Bus       | 135  | 420  | 0.978  | 0.927 |
+| Car       | 597  | 2004 | 0.931  | 0.827 |
+| Cat       | 183  | 764  | 0.885  | 0.712 |
+| Chair     | 466  | 2303 | 0.833  | 0.679 |
+| Cup       | 366  | 1374 | 0.883  | 0.777 |
+| Dog       | 207  | 889  | 0.923  | 0.761 |
+| Motorbike | 233  | 1273 | 0.880  | 0.725 |
+| People    | 1562 | 5544 | 0.916  | 0.805 |
+| Table     | 333  | 2328 | 0.817  | 0.542 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.758 |
++-----------+------+------+--------+-------+
+2024-01-18 20:55:24,299 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 20:55:24,300 - mmdet - INFO - Epoch(val) [19][1467]	AP50: 0.7580, mAP: 0.7581
+2024-01-18 20:56:02,583 - mmdet - INFO - Epoch [20][50/738]	lr: 1.000e-04, eta: 0:51:55, time: 0.765, data_time: 0.050, memory: 6939, loss_cls: 5.8132, loss_conf: 50.6267, loss_xy: 65.0110, loss_wh: 1.9013, loss: 123.3521, grad_norm: 563.8521
+2024-01-18 20:56:40,374 - mmdet - INFO - Epoch [20][100/738]	lr: 1.000e-04, eta: 0:51:20, time: 0.756, data_time: 0.004, memory: 6939, loss_cls: 6.8943, loss_conf: 46.1708, loss_xy: 61.9464, loss_wh: 1.6781, loss: 116.6895, grad_norm: 591.5812
+2024-01-18 20:57:16,675 - mmdet - INFO - Epoch [20][150/738]	lr: 1.000e-04, eta: 0:50:45, time: 0.726, data_time: 0.004, memory: 6939, loss_cls: 5.7249, loss_conf: 48.4684, loss_xy: 63.6303, loss_wh: 1.8232, loss: 119.6468, grad_norm: 569.7550
+2024-01-18 20:57:54,422 - mmdet - INFO - Epoch [20][200/738]	lr: 1.000e-04, eta: 0:50:10, time: 0.755, data_time: 0.004, memory: 6939, loss_cls: 8.0667, loss_conf: 47.6417, loss_xy: 62.2085, loss_wh: 1.7555, loss: 119.6724, grad_norm: 560.4614
+2024-01-18 20:58:30,202 - mmdet - INFO - Epoch [20][250/738]	lr: 1.000e-04, eta: 0:49:35, time: 0.716, data_time: 0.004, memory: 6939, loss_cls: 5.7900, loss_conf: 46.8363, loss_xy: 64.4649, loss_wh: 1.8011, loss: 118.8922, grad_norm: 518.3194
+2024-01-18 20:59:07,879 - mmdet - INFO - Epoch [20][300/738]	lr: 1.000e-04, eta: 0:49:00, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 6.5667, loss_conf: 48.3768, loss_xy: 62.8201, loss_wh: 1.7473, loss: 119.5109, grad_norm: 612.8915
+2024-01-18 20:59:45,455 - mmdet - INFO - Epoch [20][350/738]	lr: 1.000e-04, eta: 0:48:24, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 5.5376, loss_conf: 47.0449, loss_xy: 59.9271, loss_wh: 1.7305, loss: 114.2401, grad_norm: 565.8009
+2024-01-18 21:00:22,958 - mmdet - INFO - Epoch [20][400/738]	lr: 1.000e-04, eta: 0:47:49, time: 0.750, data_time: 0.004, memory: 6939, loss_cls: 6.8260, loss_conf: 51.7873, loss_xy: 64.9068, loss_wh: 2.1857, loss: 125.7058, grad_norm: 611.7756
+2024-01-18 21:00:58,465 - mmdet - INFO - Epoch [20][450/738]	lr: 1.000e-04, eta: 0:47:14, time: 0.710, data_time: 0.004, memory: 6939, loss_cls: 7.6377, loss_conf: 50.1251, loss_xy: 65.3617, loss_wh: 2.0492, loss: 125.1737, grad_norm: 583.0926
+2024-01-18 21:01:36,696 - mmdet - INFO - Epoch [20][500/738]	lr: 1.000e-04, eta: 0:46:39, time: 0.765, data_time: 0.004, memory: 6939, loss_cls: 5.1014, loss_conf: 44.8549, loss_xy: 61.6717, loss_wh: 1.6884, loss: 113.3165, grad_norm: 549.5284
+2024-01-18 21:02:13,921 - mmdet - INFO - Epoch [20][550/738]	lr: 1.000e-04, eta: 0:46:04, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 4.6709, loss_conf: 42.8153, loss_xy: 58.5855, loss_wh: 1.5425, loss: 107.6142, grad_norm: 563.3058
+2024-01-18 21:02:50,911 - mmdet - INFO - Epoch [20][600/738]	lr: 1.000e-04, eta: 0:45:28, time: 0.740, data_time: 0.004, memory: 6939, loss_cls: 6.5264, loss_conf: 42.8296, loss_xy: 56.9209, loss_wh: 1.5178, loss: 107.7947, grad_norm: 553.4150
+2024-01-18 21:03:27,601 - mmdet - INFO - Epoch [20][650/738]	lr: 1.000e-04, eta: 0:44:53, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 9.1114, loss_conf: 47.8782, loss_xy: 63.5130, loss_wh: 1.7797, loss: 122.2822, grad_norm: 592.6378
+2024-01-18 21:04:04,880 - mmdet - INFO - Epoch [20][700/738]	lr: 1.000e-04, eta: 0:44:18, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 7.8213, loss_conf: 39.2521, loss_xy: 55.4734, loss_wh: 1.4848, loss: 104.0317, grad_norm: 575.4007
+2024-01-18 21:04:33,008 - mmdet - INFO - Saving checkpoint at 20 epochs
+2024-01-18 21:05:23,110 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 924  | 0.920  | 0.808 |
+| Boat      | 289  | 1122 | 0.893  | 0.779 |
+| Bottle    | 282  | 1397 | 0.894  | 0.774 |
+| Bus       | 135  | 351  | 0.941  | 0.910 |
+| Car       | 597  | 2007 | 0.936  | 0.835 |
+| Cat       | 183  | 633  | 0.896  | 0.726 |
+| Chair     | 466  | 2364 | 0.848  | 0.691 |
+| Cup       | 366  | 1354 | 0.877  | 0.778 |
+| Dog       | 207  | 625  | 0.918  | 0.775 |
+| Motorbike | 233  | 1128 | 0.906  | 0.772 |
+| People    | 1562 | 4892 | 0.910  | 0.817 |
+| Table     | 333  | 2273 | 0.796  | 0.536 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.767 |
++-----------+------+------+--------+-------+
+2024-01-18 21:05:23,115 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:05:23,115 - mmdet - INFO - Epoch(val) [20][1467]	AP50: 0.7670, mAP: 0.7667
+2024-01-18 21:06:02,642 - mmdet - INFO - Epoch [21][50/738]	lr: 1.000e-04, eta: 0:43:09, time: 0.790, data_time: 0.050, memory: 6939, loss_cls: 5.5459, loss_conf: 44.8934, loss_xy: 60.8528, loss_wh: 1.6078, loss: 112.8998, grad_norm: 566.8145
+2024-01-18 21:06:41,397 - mmdet - INFO - Epoch [21][100/738]	lr: 1.000e-04, eta: 0:42:34, time: 0.775, data_time: 0.004, memory: 6939, loss_cls: 7.1485, loss_conf: 49.6956, loss_xy: 64.4807, loss_wh: 1.7814, loss: 123.1062, grad_norm: 570.7962
+2024-01-18 21:07:18,349 - mmdet - INFO - Epoch [21][150/738]	lr: 1.000e-04, eta: 0:41:59, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 3.7889, loss_conf: 42.8277, loss_xy: 59.1592, loss_wh: 1.5245, loss: 107.3003, grad_norm: 517.4685
+2024-01-18 21:07:53,233 - mmdet - INFO - Epoch [21][200/738]	lr: 1.000e-04, eta: 0:41:23, time: 0.698, data_time: 0.004, memory: 6939, loss_cls: 5.4569, loss_conf: 40.9039, loss_xy: 58.0075, loss_wh: 1.5517, loss: 105.9200, grad_norm: 539.7546
+2024-01-18 21:08:28,873 - mmdet - INFO - Epoch [21][250/738]	lr: 1.000e-04, eta: 0:40:48, time: 0.713, data_time: 0.004, memory: 6939, loss_cls: 6.9120, loss_conf: 45.4463, loss_xy: 59.5358, loss_wh: 1.6982, loss: 113.5922, grad_norm: 580.0115
+2024-01-18 21:09:05,407 - mmdet - INFO - Epoch [21][300/738]	lr: 1.000e-04, eta: 0:40:12, time: 0.731, data_time: 0.004, memory: 6939, loss_cls: 5.3470, loss_conf: 44.0521, loss_xy: 60.9423, loss_wh: 1.7288, loss: 112.0702, grad_norm: 521.2468
+2024-01-18 21:09:42,255 - mmdet - INFO - Epoch [21][350/738]	lr: 1.000e-04, eta: 0:39:37, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 4.8346, loss_conf: 39.6435, loss_xy: 56.5838, loss_wh: 1.4349, loss: 102.4969, grad_norm: 529.2632
+2024-01-18 21:10:20,123 - mmdet - INFO - Epoch [21][400/738]	lr: 1.000e-04, eta: 0:39:02, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 9.5375, loss_conf: 46.3923, loss_xy: 64.4868, loss_wh: 1.6642, loss: 122.0808, grad_norm: 571.5312
+2024-01-18 21:10:57,928 - mmdet - INFO - Epoch [21][450/738]	lr: 1.000e-04, eta: 0:38:27, time: 0.756, data_time: 0.004, memory: 6939, loss_cls: 6.1312, loss_conf: 49.2223, loss_xy: 64.7636, loss_wh: 1.9088, loss: 122.0259, grad_norm: 607.0501
+2024-01-18 21:11:35,402 - mmdet - INFO - Epoch [21][500/738]	lr: 1.000e-04, eta: 0:37:52, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 4.8812, loss_conf: 44.5374, loss_xy: 61.4240, loss_wh: 1.6188, loss: 112.4614, grad_norm: 572.5057
+2024-01-18 21:12:11,425 - mmdet - INFO - Epoch [21][550/738]	lr: 1.000e-04, eta: 0:37:16, time: 0.720, data_time: 0.004, memory: 6939, loss_cls: 7.6729, loss_conf: 45.4173, loss_xy: 64.5234, loss_wh: 1.8136, loss: 119.4273, grad_norm: 545.0482
+2024-01-18 21:12:48,488 - mmdet - INFO - Epoch [21][600/738]	lr: 1.000e-04, eta: 0:36:41, time: 0.741, data_time: 0.005, memory: 6939, loss_cls: 6.0893, loss_conf: 51.1671, loss_xy: 67.9012, loss_wh: 2.0849, loss: 127.2425, grad_norm: 580.9632
+2024-01-18 21:13:25,709 - mmdet - INFO - Epoch [21][650/738]	lr: 1.000e-04, eta: 0:36:06, time: 0.744, data_time: 0.004, memory: 6939, loss_cls: 6.1483, loss_conf: 40.6252, loss_xy: 60.5267, loss_wh: 1.5938, loss: 108.8941, grad_norm: 536.7913
+2024-01-18 21:14:03,115 - mmdet - INFO - Epoch [21][700/738]	lr: 1.000e-04, eta: 0:35:30, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 6.6617, loss_conf: 49.3762, loss_xy: 63.7199, loss_wh: 2.0197, loss: 121.7775, grad_norm: 573.9660
+2024-01-18 21:14:31,016 - mmdet - INFO - Saving checkpoint at 21 epochs
+2024-01-18 21:15:22,360 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 739  | 0.906  | 0.813 |
+| Boat      | 289  | 1025 | 0.893  | 0.782 |
+| Bottle    | 282  | 1323 | 0.894  | 0.765 |
+| Bus       | 135  | 359  | 0.963  | 0.930 |
+| Car       | 597  | 1833 | 0.925  | 0.830 |
+| Cat       | 183  | 694  | 0.907  | 0.710 |
+| Chair     | 466  | 2283 | 0.839  | 0.694 |
+| Cup       | 366  | 1193 | 0.874  | 0.782 |
+| Dog       | 207  | 622  | 0.884  | 0.744 |
+| Motorbike | 233  | 1121 | 0.893  | 0.752 |
+| People    | 1562 | 4793 | 0.906  | 0.812 |
+| Table     | 333  | 2319 | 0.805  | 0.544 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.763 |
++-----------+------+------+--------+-------+
+2024-01-18 21:15:22,364 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:15:22,365 - mmdet - INFO - Epoch(val) [21][1467]	AP50: 0.7630, mAP: 0.7630
+2024-01-18 21:16:02,231 - mmdet - INFO - Epoch [22][50/738]	lr: 1.000e-04, eta: 0:34:23, time: 0.797, data_time: 0.051, memory: 6939, loss_cls: 5.6853, loss_conf: 44.4959, loss_xy: 61.4369, loss_wh: 1.7458, loss: 113.3638, grad_norm: 546.0939
+2024-01-18 21:16:39,700 - mmdet - INFO - Epoch [22][100/738]	lr: 1.000e-04, eta: 0:33:48, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 5.1051, loss_conf: 49.8312, loss_xy: 65.6596, loss_wh: 1.7378, loss: 122.3337, grad_norm: 578.8335
+2024-01-18 21:17:17,055 - mmdet - INFO - Epoch [22][150/738]	lr: 1.000e-04, eta: 0:33:13, time: 0.747, data_time: 0.004, memory: 6939, loss_cls: 4.4369, loss_conf: 43.8703, loss_xy: 59.6126, loss_wh: 1.5117, loss: 109.4316, grad_norm: 544.6987
+2024-01-18 21:17:55,370 - mmdet - INFO - Epoch [22][200/738]	lr: 1.000e-04, eta: 0:32:38, time: 0.766, data_time: 0.004, memory: 6939, loss_cls: 5.4179, loss_conf: 43.0346, loss_xy: 59.1299, loss_wh: 1.4489, loss: 109.0313, grad_norm: 530.0217
+2024-01-18 21:18:32,038 - mmdet - INFO - Epoch [22][250/738]	lr: 1.000e-04, eta: 0:32:02, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 8.0060, loss_conf: 49.4335, loss_xy: 67.2769, loss_wh: 1.9603, loss: 126.6767, grad_norm: 584.5101
+2024-01-18 21:19:08,740 - mmdet - INFO - Epoch [22][300/738]	lr: 1.000e-04, eta: 0:31:27, time: 0.734, data_time: 0.004, memory: 6939, loss_cls: 4.9368, loss_conf: 39.1476, loss_xy: 58.1085, loss_wh: 1.4856, loss: 103.6785, grad_norm: 519.6129
+2024-01-18 21:19:45,586 - mmdet - INFO - Epoch [22][350/738]	lr: 1.000e-04, eta: 0:30:52, time: 0.737, data_time: 0.004, memory: 6939, loss_cls: 6.1194, loss_conf: 47.8642, loss_xy: 61.8245, loss_wh: 1.6587, loss: 117.4668, grad_norm: 590.5398
+2024-01-18 21:20:22,260 - mmdet - INFO - Epoch [22][400/738]	lr: 1.000e-04, eta: 0:30:16, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 5.0565, loss_conf: 44.4739, loss_xy: 64.2523, loss_wh: 1.7317, loss: 115.5144, grad_norm: 559.6678
+2024-01-18 21:21:00,782 - mmdet - INFO - Epoch [22][450/738]	lr: 1.000e-04, eta: 0:29:41, time: 0.770, data_time: 0.005, memory: 6939, loss_cls: 5.2382, loss_conf: 45.5935, loss_xy: 63.4250, loss_wh: 1.6923, loss: 115.9490, grad_norm: 582.3376
+2024-01-18 21:21:38,726 - mmdet - INFO - Epoch [22][500/738]	lr: 1.000e-04, eta: 0:29:06, time: 0.759, data_time: 0.004, memory: 6939, loss_cls: 5.3004, loss_conf: 46.5489, loss_xy: 64.5938, loss_wh: 1.7856, loss: 118.2288, grad_norm: 568.7674
+2024-01-18 21:22:14,664 - mmdet - INFO - Epoch [22][550/738]	lr: 1.000e-04, eta: 0:28:30, time: 0.719, data_time: 0.004, memory: 6939, loss_cls: 3.2207, loss_conf: 46.0610, loss_xy: 64.1757, loss_wh: 1.7635, loss: 115.2209, grad_norm: 540.3070
+2024-01-18 21:22:51,942 - mmdet - INFO - Epoch [22][600/738]	lr: 1.000e-04, eta: 0:27:55, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 5.4303, loss_conf: 43.0847, loss_xy: 60.2997, loss_wh: 1.5558, loss: 110.3705, grad_norm: 558.1869
+2024-01-18 21:23:29,769 - mmdet - INFO - Epoch [22][650/738]	lr: 1.000e-04, eta: 0:27:20, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 5.6030, loss_conf: 43.9548, loss_xy: 62.3295, loss_wh: 1.6512, loss: 113.5385, grad_norm: 573.7436
+2024-01-18 21:24:07,388 - mmdet - INFO - Epoch [22][700/738]	lr: 1.000e-04, eta: 0:26:44, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 5.9639, loss_conf: 44.3754, loss_xy: 59.5310, loss_wh: 1.7316, loss: 111.6019, grad_norm: 562.6111
+2024-01-18 21:24:36,256 - mmdet - INFO - Saving checkpoint at 22 epochs
+2024-01-18 21:25:26,364 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 808  | 0.906  | 0.814 |
+| Boat      | 289  | 1003 | 0.879  | 0.770 |
+| Bottle    | 282  | 1258 | 0.904  | 0.778 |
+| Bus       | 135  | 331  | 0.948  | 0.922 |
+| Car       | 597  | 1623 | 0.913  | 0.829 |
+| Cat       | 183  | 553  | 0.874  | 0.722 |
+| Chair     | 466  | 1989 | 0.837  | 0.688 |
+| Cup       | 366  | 1158 | 0.891  | 0.803 |
+| Dog       | 207  | 644  | 0.894  | 0.749 |
+| Motorbike | 233  | 1001 | 0.888  | 0.751 |
+| People    | 1562 | 4593 | 0.905  | 0.810 |
+| Table     | 333  | 1973 | 0.808  | 0.548 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.765 |
++-----------+------+------+--------+-------+
+2024-01-18 21:25:26,368 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:25:26,369 - mmdet - INFO - Epoch(val) [22][1467]	AP50: 0.7650, mAP: 0.7654
+2024-01-18 21:26:04,644 - mmdet - INFO - Epoch [23][50/738]	lr: 1.000e-04, eta: 0:25:38, time: 0.765, data_time: 0.050, memory: 6939, loss_cls: 3.8798, loss_conf: 42.1529, loss_xy: 58.4032, loss_wh: 1.6267, loss: 106.0626, grad_norm: 546.7758
+2024-01-18 21:26:42,359 - mmdet - INFO - Epoch [23][100/738]	lr: 1.000e-04, eta: 0:25:03, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 5.2617, loss_conf: 47.8018, loss_xy: 67.7196, loss_wh: 1.9493, loss: 122.7324, grad_norm: 578.6904
+2024-01-18 21:27:18,673 - mmdet - INFO - Epoch [23][150/738]	lr: 1.000e-04, eta: 0:24:28, time: 0.726, data_time: 0.004, memory: 6939, loss_cls: 4.8602, loss_conf: 40.2603, loss_xy: 58.4394, loss_wh: 1.4841, loss: 105.0439, grad_norm: 560.5286
+2024-01-18 21:27:55,982 - mmdet - INFO - Epoch [23][200/738]	lr: 1.000e-04, eta: 0:23:52, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 5.6464, loss_conf: 44.1692, loss_xy: 64.7903, loss_wh: 1.7565, loss: 116.3625, grad_norm: 561.7230
+2024-01-18 21:28:33,695 - mmdet - INFO - Epoch [23][250/738]	lr: 1.000e-04, eta: 0:23:17, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 6.0441, loss_conf: 39.4609, loss_xy: 60.4268, loss_wh: 1.6578, loss: 107.5896, grad_norm: 566.2429
+2024-01-18 21:29:10,867 - mmdet - INFO - Epoch [23][300/738]	lr: 1.000e-04, eta: 0:22:41, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 4.7945, loss_conf: 41.7975, loss_xy: 60.6886, loss_wh: 1.5257, loss: 108.8062, grad_norm: 557.7778
+2024-01-18 21:29:46,853 - mmdet - INFO - Epoch [23][350/738]	lr: 1.000e-04, eta: 0:22:06, time: 0.720, data_time: 0.004, memory: 6939, loss_cls: 5.7417, loss_conf: 40.6354, loss_xy: 58.3271, loss_wh: 1.5259, loss: 106.2302, grad_norm: 549.7471
+2024-01-18 21:30:24,017 - mmdet - INFO - Epoch [23][400/738]	lr: 1.000e-04, eta: 0:21:31, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 4.6348, loss_conf: 39.0201, loss_xy: 57.9234, loss_wh: 1.4301, loss: 103.0085, grad_norm: 542.1075
+2024-01-18 21:31:01,855 - mmdet - INFO - Epoch [23][450/738]	lr: 1.000e-04, eta: 0:20:55, time: 0.757, data_time: 0.004, memory: 6939, loss_cls: 4.6041, loss_conf: 40.8284, loss_xy: 59.1049, loss_wh: 1.5285, loss: 106.0658, grad_norm: 542.3224
+2024-01-18 21:31:38,740 - mmdet - INFO - Epoch [23][500/738]	lr: 1.000e-04, eta: 0:20:20, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 8.4021, loss_conf: 41.8925, loss_xy: 63.4275, loss_wh: 1.5068, loss: 115.2289, grad_norm: 596.5776
+2024-01-18 21:32:15,897 - mmdet - INFO - Epoch [23][550/738]	lr: 1.000e-04, eta: 0:19:44, time: 0.743, data_time: 0.004, memory: 6939, loss_cls: 5.6309, loss_conf: 46.2230, loss_xy: 63.1873, loss_wh: 1.9129, loss: 116.9541, grad_norm: 601.1478
+2024-01-18 21:32:54,223 - mmdet - INFO - Epoch [23][600/738]	lr: 1.000e-04, eta: 0:19:09, time: 0.767, data_time: 0.004, memory: 6939, loss_cls: 5.4247, loss_conf: 45.7474, loss_xy: 63.8615, loss_wh: 1.5747, loss: 116.6083, grad_norm: 601.1799
+2024-01-18 21:33:32,865 - mmdet - INFO - Epoch [23][650/738]	lr: 1.000e-04, eta: 0:18:34, time: 0.773, data_time: 0.005, memory: 6939, loss_cls: 4.7703, loss_conf: 47.1077, loss_xy: 67.4868, loss_wh: 1.8479, loss: 121.2127, grad_norm: 623.2337
+2024-01-18 21:34:10,447 - mmdet - INFO - Epoch [23][700/738]	lr: 1.000e-04, eta: 0:17:58, time: 0.752, data_time: 0.004, memory: 6939, loss_cls: 4.5217, loss_conf: 44.5267, loss_xy: 62.4836, loss_wh: 1.4955, loss: 113.0275, grad_norm: 580.8913
+2024-01-18 21:34:39,056 - mmdet - INFO - Saving checkpoint at 23 epochs
+2024-01-18 21:35:29,052 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 700  | 0.906  | 0.818 |
+| Boat      | 289  | 1066 | 0.889  | 0.790 |
+| Bottle    | 282  | 1194 | 0.879  | 0.772 |
+| Bus       | 135  | 378  | 0.963  | 0.933 |
+| Car       | 597  | 1648 | 0.921  | 0.833 |
+| Cat       | 183  | 533  | 0.896  | 0.741 |
+| Chair     | 466  | 1870 | 0.828  | 0.694 |
+| Cup       | 366  | 1057 | 0.872  | 0.783 |
+| Dog       | 207  | 528  | 0.899  | 0.770 |
+| Motorbike | 233  | 961  | 0.880  | 0.770 |
+| People    | 1562 | 4549 | 0.908  | 0.816 |
+| Table     | 333  | 1899 | 0.793  | 0.550 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.773 |
++-----------+------+------+--------+-------+
+2024-01-18 21:35:29,056 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:35:29,057 - mmdet - INFO - Epoch(val) [23][1467]	AP50: 0.7730, mAP: 0.7726
+2024-01-18 21:36:08,876 - mmdet - INFO - Epoch [24][50/738]	lr: 1.000e-05, eta: 0:16:54, time: 0.796, data_time: 0.050, memory: 6939, loss_cls: 5.7124, loss_conf: 44.6861, loss_xy: 66.5321, loss_wh: 1.7665, loss: 118.6970, grad_norm: 603.9310
+2024-01-18 21:36:46,447 - mmdet - INFO - Epoch [24][100/738]	lr: 1.000e-05, eta: 0:16:18, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 7.3293, loss_conf: 38.4668, loss_xy: 57.2428, loss_wh: 1.5306, loss: 104.5694, grad_norm: 554.1931
+2024-01-18 21:37:23,697 - mmdet - INFO - Epoch [24][150/738]	lr: 1.000e-05, eta: 0:15:43, time: 0.745, data_time: 0.004, memory: 6939, loss_cls: 4.4799, loss_conf: 40.1374, loss_xy: 57.0206, loss_wh: 1.3689, loss: 103.0069, grad_norm: 541.6988
+2024-01-18 21:37:59,249 - mmdet - INFO - Epoch [24][200/738]	lr: 1.000e-05, eta: 0:15:07, time: 0.711, data_time: 0.004, memory: 6939, loss_cls: 5.6006, loss_conf: 44.3762, loss_xy: 58.5890, loss_wh: 1.6155, loss: 110.1813, grad_norm: 579.4855
+2024-01-18 21:38:36,011 - mmdet - INFO - Epoch [24][250/738]	lr: 1.000e-05, eta: 0:14:32, time: 0.735, data_time: 0.004, memory: 6939, loss_cls: 4.3281, loss_conf: 39.4381, loss_xy: 60.0523, loss_wh: 1.4376, loss: 105.2561, grad_norm: 522.3216
+2024-01-18 21:39:12,123 - mmdet - INFO - Epoch [24][300/738]	lr: 1.000e-05, eta: 0:13:56, time: 0.722, data_time: 0.004, memory: 6939, loss_cls: 4.9903, loss_conf: 49.4885, loss_xy: 69.5845, loss_wh: 1.9356, loss: 125.9989, grad_norm: 600.6500
+2024-01-18 21:39:49,052 - mmdet - INFO - Epoch [24][350/738]	lr: 1.000e-05, eta: 0:13:21, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 4.6676, loss_conf: 45.4500, loss_xy: 62.2708, loss_wh: 1.4776, loss: 113.8661, grad_norm: 599.2602
+2024-01-18 21:40:26,536 - mmdet - INFO - Epoch [24][400/738]	lr: 1.000e-05, eta: 0:12:45, time: 0.750, data_time: 0.004, memory: 6939, loss_cls: 4.3039, loss_conf: 36.3849, loss_xy: 57.4121, loss_wh: 1.3580, loss: 99.4588, grad_norm: 522.5429
+2024-01-18 21:41:03,834 - mmdet - INFO - Epoch [24][450/738]	lr: 1.000e-05, eta: 0:12:10, time: 0.746, data_time: 0.004, memory: 6939, loss_cls: 5.1517, loss_conf: 46.1001, loss_xy: 63.5795, loss_wh: 1.5709, loss: 116.4023, grad_norm: 558.0060
+2024-01-18 21:41:40,506 - mmdet - INFO - Epoch [24][500/738]	lr: 1.000e-05, eta: 0:11:34, time: 0.733, data_time: 0.004, memory: 6939, loss_cls: 5.3740, loss_conf: 45.7215, loss_xy: 66.1112, loss_wh: 1.7148, loss: 118.9215, grad_norm: 635.4743
+2024-01-18 21:42:16,196 - mmdet - INFO - Epoch [24][550/738]	lr: 1.000e-05, eta: 0:10:59, time: 0.714, data_time: 0.004, memory: 6939, loss_cls: 6.3085, loss_conf: 40.9892, loss_xy: 62.3979, loss_wh: 1.4465, loss: 111.1421, grad_norm: 548.9358
+2024-01-18 21:42:54,112 - mmdet - INFO - Epoch [24][600/738]	lr: 1.000e-05, eta: 0:10:23, time: 0.758, data_time: 0.004, memory: 6939, loss_cls: 5.1946, loss_conf: 40.6057, loss_xy: 60.0056, loss_wh: 1.6400, loss: 107.4459, grad_norm: 563.1057
+2024-01-18 21:43:30,988 - mmdet - INFO - Epoch [24][650/738]	lr: 1.000e-05, eta: 0:09:48, time: 0.738, data_time: 0.004, memory: 6939, loss_cls: 4.3463, loss_conf: 40.8926, loss_xy: 61.4673, loss_wh: 1.5487, loss: 108.2549, grad_norm: 569.0298
+2024-01-18 21:44:08,418 - mmdet - INFO - Epoch [24][700/738]	lr: 1.000e-05, eta: 0:09:12, time: 0.749, data_time: 0.004, memory: 6939, loss_cls: 7.4420, loss_conf: 47.5230, loss_xy: 66.3157, loss_wh: 1.6215, loss: 122.9022, grad_norm: 588.0930
+2024-01-18 21:44:37,423 - mmdet - INFO - Saving checkpoint at 24 epochs
+2024-01-18 21:45:27,540 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 756  | 0.910  | 0.819 |
+| Boat      | 289  | 1058 | 0.886  | 0.789 |
+| Bottle    | 282  | 1172 | 0.897  | 0.787 |
+| Bus       | 135  | 385  | 0.956  | 0.929 |
+| Car       | 597  | 1760 | 0.923  | 0.834 |
+| Cat       | 183  | 527  | 0.869  | 0.727 |
+| Chair     | 466  | 2013 | 0.839  | 0.699 |
+| Cup       | 366  | 1065 | 0.877  | 0.788 |
+| Dog       | 207  | 565  | 0.894  | 0.766 |
+| Motorbike | 233  | 959  | 0.888  | 0.781 |
+| People    | 1562 | 4654 | 0.908  | 0.816 |
+| Table     | 333  | 1965 | 0.796  | 0.565 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.775 |
++-----------+------+------+--------+-------+
+2024-01-18 21:45:27,544 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:45:27,545 - mmdet - INFO - Epoch(val) [24][1467]	AP50: 0.7750, mAP: 0.7751
+2024-01-18 21:46:05,590 - mmdet - INFO - Epoch [25][50/738]	lr: 1.000e-05, eta: 0:08:08, time: 0.761, data_time: 0.057, memory: 6939, loss_cls: 5.1837, loss_conf: 45.1075, loss_xy: 62.5728, loss_wh: 1.6720, loss: 114.5359, grad_norm: 554.0516
+2024-01-18 21:46:43,711 - mmdet - INFO - Epoch [25][100/738]	lr: 1.000e-05, eta: 0:07:33, time: 0.762, data_time: 0.004, memory: 6939, loss_cls: 4.9467, loss_conf: 38.5468, loss_xy: 58.6850, loss_wh: 1.5204, loss: 103.6989, grad_norm: 530.3657
+2024-01-18 21:47:21,415 - mmdet - INFO - Epoch [25][150/738]	lr: 1.000e-05, eta: 0:06:58, time: 0.754, data_time: 0.004, memory: 6939, loss_cls: 6.5454, loss_conf: 39.1250, loss_xy: 61.6627, loss_wh: 1.4534, loss: 108.7865, grad_norm: 528.0377
+2024-01-18 21:47:59,598 - mmdet - INFO - Epoch [25][200/738]	lr: 1.000e-05, eta: 0:06:22, time: 0.764, data_time: 0.004, memory: 6939, loss_cls: 3.1504, loss_conf: 41.6842, loss_xy: 64.3696, loss_wh: 1.5196, loss: 110.7238, grad_norm: 518.4975
+2024-01-18 21:48:35,709 - mmdet - INFO - Epoch [25][250/738]	lr: 1.000e-05, eta: 0:05:47, time: 0.722, data_time: 0.004, memory: 6939, loss_cls: 4.0507, loss_conf: 41.4518, loss_xy: 63.6299, loss_wh: 1.4944, loss: 110.6268, grad_norm: 539.9551
+2024-01-18 21:49:13,265 - mmdet - INFO - Epoch [25][300/738]	lr: 1.000e-05, eta: 0:05:11, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 4.2050, loss_conf: 41.0881, loss_xy: 61.1852, loss_wh: 1.4185, loss: 107.8968, grad_norm: 552.8070
+2024-01-18 21:49:49,501 - mmdet - INFO - Epoch [25][350/738]	lr: 1.000e-05, eta: 0:04:35, time: 0.725, data_time: 0.004, memory: 6939, loss_cls: 5.1973, loss_conf: 43.4575, loss_xy: 61.8545, loss_wh: 1.5825, loss: 112.0918, grad_norm: 569.9209
+2024-01-18 21:50:26,439 - mmdet - INFO - Epoch [25][400/738]	lr: 1.000e-05, eta: 0:04:00, time: 0.739, data_time: 0.004, memory: 6939, loss_cls: 4.9749, loss_conf: 46.0868, loss_xy: 64.0505, loss_wh: 1.6955, loss: 116.8077, grad_norm: 559.8027
+2024-01-18 21:51:02,465 - mmdet - INFO - Epoch [25][450/738]	lr: 1.000e-05, eta: 0:03:24, time: 0.721, data_time: 0.004, memory: 6939, loss_cls: 4.3590, loss_conf: 39.3524, loss_xy: 61.6928, loss_wh: 1.3407, loss: 106.7448, grad_norm: 535.7185
+2024-01-18 21:51:40,462 - mmdet - INFO - Epoch [25][500/738]	lr: 1.000e-05, eta: 0:02:49, time: 0.760, data_time: 0.004, memory: 6939, loss_cls: 4.3133, loss_conf: 39.0011, loss_xy: 60.5311, loss_wh: 1.4700, loss: 105.3154, grad_norm: 518.5089
+2024-01-18 21:52:17,843 - mmdet - INFO - Epoch [25][550/738]	lr: 1.000e-05, eta: 0:02:13, time: 0.748, data_time: 0.004, memory: 6939, loss_cls: 4.2256, loss_conf: 44.6869, loss_xy: 66.7610, loss_wh: 1.8698, loss: 117.5433, grad_norm: 561.0968
+2024-01-18 21:52:54,426 - mmdet - INFO - Epoch [25][600/738]	lr: 1.000e-05, eta: 0:01:38, time: 0.732, data_time: 0.004, memory: 6939, loss_cls: 4.4059, loss_conf: 47.2993, loss_xy: 62.8460, loss_wh: 1.6521, loss: 116.2033, grad_norm: 587.8208
+2024-01-18 21:53:31,993 - mmdet - INFO - Epoch [25][650/738]	lr: 1.000e-05, eta: 0:01:02, time: 0.751, data_time: 0.004, memory: 6939, loss_cls: 4.8403, loss_conf: 43.1964, loss_xy: 62.6384, loss_wh: 1.7503, loss: 112.4254, grad_norm: 588.0594
+2024-01-18 21:54:07,865 - mmdet - INFO - Epoch [25][700/738]	lr: 1.000e-05, eta: 0:00:27, time: 0.717, data_time: 0.004, memory: 6939, loss_cls: 4.8048, loss_conf: 39.4749, loss_xy: 58.9260, loss_wh: 1.3626, loss: 104.5683, grad_norm: 554.7008
+2024-01-18 21:54:36,661 - mmdet - INFO - Saving checkpoint at 25 epochs
+2024-01-18 21:55:26,734 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 723  | 0.896  | 0.812 |
+| Boat      | 289  | 1028 | 0.886  | 0.789 |
+| Bottle    | 282  | 1060 | 0.887  | 0.779 |
+| Bus       | 135  | 371  | 0.956  | 0.928 |
+| Car       | 597  | 1743 | 0.923  | 0.835 |
+| Cat       | 183  | 530  | 0.874  | 0.725 |
+| Chair     | 466  | 1967 | 0.843  | 0.707 |
+| Cup       | 366  | 1055 | 0.883  | 0.797 |
+| Dog       | 207  | 573  | 0.899  | 0.768 |
+| Motorbike | 233  | 925  | 0.893  | 0.785 |
+| People    | 1562 | 4495 | 0.911  | 0.821 |
+| Table     | 333  | 1914 | 0.796  | 0.555 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.775 |
++-----------+------+------+--------+-------+
+2024-01-18 21:55:26,738 - mmdet - INFO - Exp name: yolov3_Unet.py
+2024-01-18 21:55:26,739 - mmdet - INFO - Epoch(val) [25][1467]	AP50: 0.7750, mAP: 0.7751
